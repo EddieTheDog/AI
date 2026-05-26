@@ -1,0 +1,594 @@
+<!-- src/index.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="SIA — Your intelligent assistant." />
+  <meta name="theme-color" content="#0d0d0f" />
+  <meta name="robots" content="noindex, nofollow" />
+  <title>SIA</title>
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+
+  <!-- Highlight.js -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js" defer></script>
+
+  <!-- Marked.js -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/9.1.6/marked.min.js" defer></script>
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="/src/css/base.css" />
+  <link rel="stylesheet" href="/src/css/layout.css" />
+  <link rel="stylesheet" href="/src/css/messages.css" />
+  <link rel="stylesheet" href="/src/css/components.css" />
+
+  <style>
+    /* Page-specific overrides */
+    .app-shell { opacity: 0; transition: opacity 0.2s ease; }
+    .app-shell.ready { opacity: 1; }
+  </style>
+</head>
+<body>
+
+<!-- Sidebar overlay (mobile) -->
+<div class="sidebar-overlay" id="sidebar-overlay" aria-hidden="true"></div>
+
+<div class="app-shell" id="app-shell">
+
+  <!-- ── Sidebar ──────────────────────────────────────────────────── -->
+  <aside class="sidebar" id="sidebar" aria-label="Conversations">
+
+    <div class="sidebar-header">
+      <a href="/" class="sidebar-logo" aria-label="SIA home">
+        <div class="sidebar-logo-mark" aria-hidden="true">
+          <svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M4 11 Q8 4 12 11" stroke="white" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+            <circle cx="8" cy="6.5" r="1.5" fill="white"/>
+          </svg>
+        </div>
+        SIA
+      </a>
+
+      <button class="new-chat-btn" id="new-chat-btn" title="New chat" aria-label="New chat">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <path d="M12 5v14M5 12h14"/>
+        </svg>
+      </button>
+    </div>
+
+    <nav class="sidebar-scroll" aria-label="Conversation history">
+      <div id="conversation-list">
+        <p class="sidebar-empty">No conversations yet.</p>
+      </div>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="sidebar-user" id="sidebar-user-btn" role="button" tabindex="0" aria-label="Account options">
+        <div class="sidebar-avatar" id="sidebar-avatar" aria-hidden="true">—</div>
+        <div class="sidebar-user-info">
+          <div class="sidebar-user-name truncate" id="sidebar-user-name">Loading...</div>
+          <div class="sidebar-user-email truncate" id="sidebar-user-email"></div>
+        </div>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <polyline points="6 9 12 15 18 9"/>
+        </svg>
+      </div>
+    </div>
+
+  </aside>
+
+  <!-- ── Main ─────────────────────────────────────────────────────── -->
+  <main class="main" id="main">
+
+    <!-- Chat header -->
+    <header class="chat-header" id="chat-header">
+      <button class="sidebar-toggle" id="sidebar-toggle" aria-label="Toggle sidebar">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <line x1="3" y1="6" x2="21" y2="6"/>
+          <line x1="3" y1="12" x2="21" y2="12"/>
+          <line x1="3" y1="18" x2="21" y2="18"/>
+        </svg>
+      </button>
+
+      <span class="chat-header-title" id="chat-title"></span>
+
+      <button class="action-btn" id="memory-toggle-btn" title="Memory" aria-label="Toggle memory panel" style="width:34px;height:34px;border-radius:var(--radius-md);">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <path d="M12 2a7 7 0 0 1 7 7c0 3.5-2 6-4 7.4V18a1 1 0 0 1-1 1h-4a1 1 0 0 1-1-1v-1.6C7 15 5 12.5 5 9a7 7 0 0 1 7-7z"/>
+          <line x1="9" y1="22" x2="15" y2="22"/>
+          <line x1="9.5" y1="18" x2="14.5" y2="18"/>
+        </svg>
+      </button>
+    </header>
+
+    <!-- Messages -->
+    <section class="messages-area" id="messages-area" aria-label="Messages" aria-live="polite">
+      <div class="messages-container" id="messages-container">
+
+        <!-- Empty state (shown when no active conversation) -->
+        <div class="empty-state" id="empty-state">
+          <div class="empty-logo" aria-hidden="true">
+            <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+              <path d="M6 18 Q14 6 22 18" stroke="var(--accent)" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+              <circle cx="14" cy="11" r="2.8" fill="var(--accent)"/>
+            </svg>
+          </div>
+          <h1 class="empty-title">How can I help?</h1>
+          <p class="empty-subtitle">Ask me anything — I'm here to assist.</p>
+          <div class="empty-prompts" aria-label="Suggested prompts">
+            <button class="empty-prompt-btn" data-prompt="Explain how large language models work">Explain how large language models work</button>
+            <button class="empty-prompt-btn" data-prompt="Write a Python script to scrape a website">Write a Python script to scrape a website</button>
+            <button class="empty-prompt-btn" data-prompt="What are the best practices for REST API design?">Best practices for REST API design</button>
+            <button class="empty-prompt-btn" data-prompt="Summarize the key ideas behind stoicism">Key ideas behind stoicism</button>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- Input area -->
+    <footer class="input-area" aria-label="Message input">
+      <div class="input-wrap">
+
+        <div class="input-box" id="input-box">
+
+          <!-- Image preview (shown after upload) -->
+          <div class="input-image-preview" id="input-image-preview" aria-label="Attached image">
+            <img class="input-image-thumb" id="input-image-thumb" src="" alt="Attached image preview" />
+            <span id="input-image-name" style="font-size:var(--text-xs);color:var(--text-muted);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"></span>
+            <button class="input-image-remove" id="input-image-remove" aria-label="Remove image">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+              </svg>
+            </button>
+          </div>
+
+          <!-- Upload progress -->
+          <div class="upload-progress-bar" id="upload-progress-bar">
+            <div class="upload-progress-fill" id="upload-progress-fill"></div>
+          </div>
+
+          <div class="input-row">
+            <textarea
+              id="message-input"
+              placeholder="Message SIA..."
+              rows="1"
+              autocomplete="off"
+              spellcheck="true"
+              aria-label="Message input"
+              aria-multiline="true"
+            ></textarea>
+
+            <div class="input-actions">
+              <!-- Image upload -->
+              <button class="input-icon-btn" id="image-upload-btn" title="Attach image" aria-label="Attach image">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                  <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                  <circle cx="8.5" cy="8.5" r="1.5"/>
+                  <polyline points="21 15 16 10 5 21"/>
+                </svg>
+              </button>
+
+              <!-- Cancel (shown while waiting) -->
+              <button id="cancel-btn" aria-label="Cancel response" title="Cancel">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                  <rect x="3" y="3" width="18" height="18" rx="2"/>
+                </svg>
+              </button>
+
+              <!-- Send -->
+              <button id="send-btn" aria-label="Send message" title="Send">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="12" y1="19" x2="12" y2="5"/>
+                  <polyline points="5 12 12 5 19 12"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <p class="input-hint">Press <kbd style="font-family:var(--font-mono);font-size:0.7rem;background:var(--surface-2);padding:1px 5px;border-radius:4px;border:1px solid var(--border);">Shift+Enter</kbd> for new line &nbsp;·&nbsp; Click Send to submit</p>
+      </div>
+    </footer>
+
+  </main>
+
+  <!-- ── Memory Panel ──────────────────────────────────────────────── -->
+  <aside class="memory-panel" id="memory-panel" aria-label="Memory" aria-hidden="true">
+    <div class="memory-panel-header">
+      <h2 class="memory-panel-title">Memory</h2>
+      <button class="action-btn" id="memory-close-btn" aria-label="Close memory panel" style="width:28px;height:28px;border-radius:var(--radius-md);">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+    </div>
+
+    <div class="memory-list" id="memory-list" aria-label="Saved memories">
+      <p class="sidebar-empty">No memories saved yet.</p>
+    </div>
+
+    <div class="memory-add">
+      <input
+        class="memory-add-input"
+        id="memory-add-input"
+        type="text"
+        placeholder="Add a memory..."
+        aria-label="Add memory"
+        maxlength="500"
+      />
+      <button class="btn btn-primary btn-sm" id="memory-add-btn">Save</button>
+    </div>
+  </aside>
+
+</div>
+
+<!-- Hidden file input for image upload -->
+<input type="file" id="image-file-input" accept="image/jpeg,image/png,image/webp,image/gif" style="display:none;" aria-hidden="true" />
+
+<!-- ── Scripts ─────────────────────────────────────────────────────── -->
+<script type="module">
+import { initAuth, currentUser, logout, isAuthenticated } from '/src/js/auth.js';
+import { initRenderer }                                    from '/src/js/renderer.js';
+import { loadConversation, loadConversationList,
+         sendMessage, cancelPending, onUserTyping,
+         createNewConversation, getActiveConversationId }  from '/src/js/chat.js';
+import { uploadImage }                                     from '/src/js/api.js';
+import { memory as memoryAPI }                             from '/src/js/api.js';
+import { initAutoExpand, initScrollTracking,
+         resetScrollTracking, showToast,
+         openDropdown, scrollToBottom }                    from '/src/js/ui.js';
+
+// ── Boot ────────────────────────────────────────────────────────────
+
+async function boot() {
+  initRenderer();
+
+  const user = await initAuth();
+
+  if (!user) {
+    window.location.href = `/?next=${encodeURIComponent(window.location.pathname)}`;
+    return;
+  }
+
+  // Populate user info in sidebar
+  document.getElementById('sidebar-user-name').textContent = user.display_name || user.email;
+  document.getElementById('sidebar-user-email').textContent = user.email;
+  const initials = (user.display_name || user.email).slice(0, 2).toUpperCase();
+  document.getElementById('sidebar-avatar').textContent = initials;
+
+  // Load conversation list
+  await loadConversationList();
+
+  // Route based on URL
+  const path = window.location.pathname;
+  if (path.startsWith('/c/')) {
+    const id = path.slice(3);
+    if (id) {
+      document.getElementById('empty-state').style.display = 'none';
+      await loadConversation(id);
+    }
+  }
+
+  // Ready
+  document.getElementById('app-shell').classList.add('ready');
+  document.getElementById('message-input').focus();
+}
+
+// ── Routing (SPA popstate) ───────────────────────────────────────────
+
+window.addEventListener('popstate', async () => {
+  const path = window.location.pathname;
+  resetScrollTracking();
+
+  if (path === '/new' || path === '/') {
+    document.getElementById('empty-state').style.display = '';
+    document.getElementById('messages-container').innerHTML = '';
+    document.getElementById('messages-container').appendChild(
+      document.getElementById('empty-state')
+    );
+    document.title = 'SIA';
+    document.getElementById('chat-title').textContent = '';
+    return;
+  }
+
+  if (path.startsWith('/c/')) {
+    const id = path.slice(3);
+    document.getElementById('empty-state').style.display = 'none';
+    await loadConversation(id);
+  }
+});
+
+// ── Input ────────────────────────────────────────────────────────────
+
+const textarea   = document.getElementById('message-input');
+const sendBtn    = document.getElementById('send-btn');
+const cancelBtn  = document.getElementById('cancel-btn');
+const messagesArea = document.getElementById('messages-area');
+
+initAutoExpand(textarea);
+initScrollTracking(messagesArea);
+
+textarea.addEventListener('input', () => onUserTyping());
+
+// Enter = newline, Send button = submit
+textarea.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    // Do nothing — user must click Send
+    // (Shift+Enter naturally creates newline)
+  }
+});
+
+sendBtn.addEventListener('click', () => doSend());
+cancelBtn.addEventListener('click', () => cancelPending());
+
+async function doSend() {
+  const content = textarea.value;
+  if (!content.trim() && !_pendingImageMetaId) return;
+
+  const imageMetaId = _pendingImageMetaId;
+
+  // Clear input
+  textarea.value = '';
+  textarea.style.height = 'auto';
+  _clearImagePreview();
+
+  await sendMessage(content, imageMetaId);
+}
+
+// ── Image Upload ─────────────────────────────────────────────────────
+
+const imageUploadBtn  = document.getElementById('image-upload-btn');
+const imageFileInput  = document.getElementById('image-file-input');
+const imagePreview    = document.getElementById('input-image-preview');
+const imageThumb      = document.getElementById('input-image-thumb');
+const imageName       = document.getElementById('input-image-name');
+const imageRemove     = document.getElementById('input-image-remove');
+const progressBar     = document.getElementById('upload-progress-bar');
+const progressFill    = document.getElementById('upload-progress-fill');
+
+let _pendingImageMetaId = null;
+
+imageUploadBtn.addEventListener('click', () => imageFileInput.click());
+
+imageFileInput.addEventListener('change', async () => {
+  const file = imageFileInput.files[0];
+  if (!file) return;
+
+  // Validate
+  const MAX_MB = 10;
+  if (file.size > MAX_MB * 1024 * 1024) {
+    showToast(`Image must be under ${MAX_MB}MB.`, 'error');
+    imageFileInput.value = '';
+    return;
+  }
+
+  const allowed = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+  if (!allowed.includes(file.type)) {
+    showToast('Only JPEG, PNG, WebP, or GIF images allowed.', 'error');
+    imageFileInput.value = '';
+    return;
+  }
+
+  // Preview
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    imageThumb.src = e.target.result;
+    imageName.textContent = file.name;
+    imagePreview.classList.add('visible');
+  };
+  reader.readAsDataURL(file);
+
+  // Upload
+  progressBar.classList.add('visible');
+  progressFill.style.width = '0%';
+  imageUploadBtn.disabled = true;
+
+  try {
+    const data = await uploadImage(file, {
+      onProgress: (pct) => {
+        progressFill.style.width = `${pct}%`;
+      },
+    });
+    _pendingImageMetaId = data.id;
+    showToast('Image attached.', 'success', 2000);
+  } catch (err) {
+    showToast(err.message || 'Upload failed.', 'error');
+    _clearImagePreview();
+  } finally {
+    progressBar.classList.remove('visible');
+    imageUploadBtn.disabled = false;
+    imageFileInput.value = '';
+  }
+});
+
+imageRemove.addEventListener('click', _clearImagePreview);
+
+function _clearImagePreview() {
+  _pendingImageMetaId = null;
+  imageThumb.src = '';
+  imageName.textContent = '';
+  imagePreview.classList.remove('visible');
+  imageFileInput.value = '';
+}
+
+// ── Sidebar Toggle (mobile) ──────────────────────────────────────────
+
+const sidebar        = document.getElementById('sidebar');
+const sidebarOverlay = document.getElementById('sidebar-overlay');
+const sidebarToggle  = document.getElementById('sidebar-toggle');
+
+sidebarToggle.addEventListener('click', toggleSidebar);
+sidebarOverlay.addEventListener('click', closeSidebar);
+
+document.getElementById('new-chat-btn').addEventListener('click', () => {
+  closeSidebar();
+  history.pushState({}, '', '/new');
+  window.dispatchEvent(new PopStateEvent('popstate'));
+  textarea.focus();
+});
+
+function toggleSidebar() {
+  const open = sidebar.classList.toggle('open');
+  sidebarOverlay.classList.toggle('visible', open);
+  sidebar.setAttribute('aria-hidden', String(!open));
+  sidebarOverlay.setAttribute('aria-hidden', String(!open));
+}
+
+function closeSidebar() {
+  sidebar.classList.remove('open');
+  sidebarOverlay.classList.remove('visible');
+  sidebar.setAttribute('aria-hidden', 'true');
+  sidebarOverlay.setAttribute('aria-hidden', 'true');
+}
+
+// ── Empty state prompt buttons ───────────────────────────────────────
+
+document.querySelectorAll('.empty-prompt-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    textarea.value = btn.dataset.prompt;
+    textarea.dispatchEvent(new Event('input'));
+    textarea.focus();
+  });
+});
+
+// ── User account dropdown ────────────────────────────────────────────
+
+const sidebarUserBtn = document.getElementById('sidebar-user-btn');
+
+sidebarUserBtn.addEventListener('click', () => {
+  openDropdown(sidebarUserBtn, [
+    {
+      label: 'Memory',
+      action: () => openMemoryPanel(),
+    },
+    'divider',
+    {
+      label: 'Sign out',
+      danger: true,
+      action: () => logout(),
+    },
+  ]);
+});
+
+sidebarUserBtn.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter' || e.key === ' ') {
+    e.preventDefault();
+    sidebarUserBtn.click();
+  }
+});
+
+// ── Memory Panel ─────────────────────────────────────────────────────
+
+const memoryPanel     = document.getElementById('memory-panel');
+const memoryList      = document.getElementById('memory-list');
+const memoryAddInput  = document.getElementById('memory-add-input');
+const memoryAddBtn    = document.getElementById('memory-add-btn');
+const memoryToggleBtn = document.getElementById('memory-toggle-btn');
+const memoryCloseBtn  = document.getElementById('memory-close-btn');
+
+memoryToggleBtn.addEventListener('click', openMemoryPanel);
+memoryCloseBtn.addEventListener('click', closeMemoryPanel);
+
+async function openMemoryPanel() {
+  memoryPanel.classList.add('open');
+  memoryPanel.setAttribute('aria-hidden', 'false');
+  await refreshMemoryList();
+  memoryAddInput.focus();
+}
+
+function closeMemoryPanel() {
+  memoryPanel.classList.remove('open');
+  memoryPanel.setAttribute('aria-hidden', 'true');
+}
+
+async function refreshMemoryList() {
+  try {
+    const data = await memoryAPI.list();
+    const items = data.memories ?? [];
+
+    if (items.length === 0) {
+      memoryList.innerHTML = '<p class="sidebar-empty">No memories saved yet.</p>';
+      return;
+    }
+
+    memoryList.innerHTML = '';
+    for (const mem of items) {
+      const item = document.createElement('div');
+      item.className = 'memory-item';
+      item.dataset.memoryId = mem.id;
+      item.innerHTML = `
+        <span class="memory-item-text">${_escHtml(mem.content)}</span>
+        <button class="memory-item-delete" aria-label="Delete memory" title="Delete">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="3 6 5 6 21 6"/>
+            <path d="M19 6l-1 14H6L5 6"/>
+            <path d="M10 11v6"/><path d="M14 11v6"/>
+            <path d="M9 6V4h6v2"/>
+          </svg>
+        </button>
+      `;
+
+      item.querySelector('.memory-item-delete').addEventListener('click', async () => {
+        try {
+          await memoryAPI.delete(mem.id);
+          item.remove();
+          if (memoryList.children.length === 0) {
+            memoryList.innerHTML = '<p class="sidebar-empty">No memories saved yet.</p>';
+          }
+        } catch {
+          showToast('Could not delete memory.', 'error');
+        }
+      });
+
+      memoryList.appendChild(item);
+    }
+  } catch {
+    showToast('Could not load memories.', 'error');
+  }
+}
+
+memoryAddBtn.addEventListener('click', addMemory);
+memoryAddInput.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') addMemory();
+});
+
+async function addMemory() {
+  const content = memoryAddInput.value.trim();
+  if (!content) return;
+
+  memoryAddBtn.disabled = true;
+  try {
+    await memoryAPI.add(content);
+    memoryAddInput.value = '';
+    await refreshMemoryList();
+    showToast('Memory saved.', 'success', 2000);
+  } catch {
+    showToast('Could not save memory.', 'error');
+  } finally {
+    memoryAddBtn.disabled = false;
+  }
+}
+
+// ── Helpers ──────────────────────────────────────────────────────────
+
+function _escHtml(str) {
+  if (typeof str !== 'string') return '';
+  return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+// ── Start ────────────────────────────────────────────────────────────
+
+boot().catch(err => {
+  console.error('[sia] boot failed', err);
+  document.getElementById('app-shell').classList.add('ready');
+});
+</script>
+
+</body>
+</html>
