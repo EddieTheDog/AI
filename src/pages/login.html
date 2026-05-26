@@ -1,0 +1,377 @@
+<!-- src/pages/login.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex, nofollow" />
+  <title>Sign in — SIA</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+
+  <link rel="stylesheet" href="/src/css/base.css" />
+  <link rel="stylesheet" href="/src/css/components.css" />
+
+  <style>
+    body {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100dvh;
+      padding: var(--space-4);
+      background: var(--bg);
+    }
+
+    /* Subtle background grid */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(var(--border-soft) 1px, transparent 1px),
+        linear-gradient(90deg, var(--border-soft) 1px, transparent 1px);
+      background-size: 48px 48px;
+      opacity: 0.4;
+      pointer-events: none;
+    }
+
+    .auth-card {
+      position: relative;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-xl);
+      padding: var(--space-8) var(--space-8);
+      width: 100%;
+      max-width: 400px;
+      box-shadow: var(--shadow-xl);
+      animation: cardIn 0.4s var(--ease) both;
+    }
+
+    @keyframes cardIn {
+      from { opacity: 0; transform: translateY(16px) scale(0.98); }
+      to   { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    .auth-logo {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: var(--space-2);
+      margin-bottom: var(--space-6);
+      text-decoration: none;
+    }
+
+    .auth-logo-mark {
+      width: 38px;
+      height: 38px;
+      background: var(--accent);
+      border-radius: var(--radius-lg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .auth-logo-text {
+      font-size: var(--text-xl);
+      font-weight: var(--weight-semibold);
+      color: var(--text);
+      letter-spacing: -0.03em;
+    }
+
+    .auth-title {
+      font-size: var(--text-lg);
+      font-weight: var(--weight-semibold);
+      color: var(--text);
+      margin-bottom: var(--space-1);
+      text-align: center;
+      letter-spacing: -0.01em;
+    }
+
+    .auth-subtitle {
+      font-size: var(--text-sm);
+      color: var(--text-muted);
+      text-align: center;
+      margin-bottom: var(--space-6);
+    }
+
+    .auth-form {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+
+    .auth-error {
+      display: none;
+      background: rgba(248,113,113,0.1);
+      border: 1px solid rgba(248,113,113,0.25);
+      border-radius: var(--radius-md);
+      padding: var(--space-3) var(--space-4);
+      font-size: var(--text-sm);
+      color: var(--error);
+      margin-bottom: var(--space-4);
+    }
+
+    .auth-error.visible {
+      display: block;
+    }
+
+    .auth-submit {
+      width: 100%;
+      padding: var(--space-3);
+      margin-top: var(--space-4);
+      font-size: var(--text-base);
+      border-radius: var(--radius-lg);
+    }
+
+    .auth-switch {
+      text-align: center;
+      margin-top: var(--space-5);
+      font-size: var(--text-sm);
+      color: var(--text-muted);
+    }
+
+    .auth-switch a {
+      color: var(--accent);
+      font-weight: var(--weight-medium);
+    }
+
+    .auth-switch a:hover {
+      color: var(--accent-hover);
+    }
+
+    /* Loading spinner on button */
+    .btn-loading {
+      position: relative;
+      color: transparent !important;
+      pointer-events: none;
+    }
+
+    .btn-loading::after {
+      content: '';
+      position: absolute;
+      width: 16px;
+      height: 16px;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .name-field {
+      display: none;
+    }
+
+    .name-field.visible {
+      display: block;
+    }
+
+    kbd {
+      font-family: var(--font-mono);
+    }
+  </style>
+</head>
+<body>
+
+<div class="auth-card" role="main">
+
+  <a href="/" class="auth-logo" aria-label="SIA home">
+    <div class="auth-logo-mark" aria-hidden="true">
+      <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+        <path d="M4 15 Q11 4 18 15" stroke="white" stroke-width="2" fill="none" stroke-linecap="round"/>
+        <circle cx="11" cy="9" r="2.2" fill="white"/>
+      </svg>
+    </div>
+    <span class="auth-logo-text">SIA</span>
+  </a>
+
+  <h1 class="auth-title" id="auth-title">Welcome back</h1>
+  <p class="auth-subtitle" id="auth-subtitle">Sign in to continue</p>
+
+  <div class="auth-error" id="auth-error" role="alert" aria-live="polite"></div>
+
+  <form class="auth-form" id="auth-form" novalidate>
+
+    <!-- Display name (register only) -->
+    <div class="form-group name-field" id="name-field">
+      <label class="form-label" for="display-name">Name</label>
+      <input
+        class="form-input"
+        id="display-name"
+        type="text"
+        autocomplete="name"
+        placeholder="Your name"
+        maxlength="80"
+      />
+    </div>
+
+    <!-- Email -->
+    <div class="form-group">
+      <label class="form-label" for="email">Email</label>
+      <input
+        class="form-input"
+        id="email"
+        type="email"
+        autocomplete="email"
+        placeholder="you@example.com"
+        required
+        inputmode="email"
+      />
+    </div>
+
+    <!-- Password -->
+    <div class="form-group">
+      <label class="form-label" for="password">Password</label>
+      <input
+        class="form-input"
+        id="password"
+        type="password"
+        autocomplete="current-password"
+        placeholder="••••••••"
+        required
+        minlength="8"
+      />
+    </div>
+
+    <button class="btn btn-primary auth-submit" id="submit-btn" type="submit">
+      Sign in
+    </button>
+
+  </form>
+
+  <p class="auth-switch" id="auth-switch">
+    Don't have an account? <a href="#" id="mode-toggle">Create one</a>
+  </p>
+
+</div>
+
+<script type="module">
+import { login, register, isAuthenticated, initAuth } from '/src/js/auth.js';
+
+// ── Check already logged in ──────────────────────────────────────────
+
+(async () => {
+  const user = await initAuth();
+  if (user) {
+    const next = new URLSearchParams(window.location.search).get('next');
+    window.location.href = next && next.startsWith('/') ? next : '/new';
+  }
+})();
+
+// ── Mode toggle (login ↔ register) ──────────────────────────────────
+
+let mode = 'login';
+
+const modeToggle   = document.getElementById('mode-toggle');
+const nameField    = document.getElementById('name-field');
+const nameInput    = document.getElementById('display-name');
+const passwordInput = document.getElementById('password');
+const authTitle    = document.getElementById('auth-title');
+const authSubtitle = document.getElementById('auth-subtitle');
+const submitBtn    = document.getElementById('submit-btn');
+const authSwitch   = document.getElementById('auth-switch');
+
+modeToggle.addEventListener('click', (e) => {
+  e.preventDefault();
+  mode = mode === 'login' ? 'register' : 'login';
+  _updateMode();
+});
+
+function _updateMode() {
+  clearError();
+  if (mode === 'register') {
+    authTitle.textContent   = 'Create account';
+    authSubtitle.textContent = 'Join SIA to get started';
+    submitBtn.textContent   = 'Create account';
+    authSwitch.innerHTML    = 'Already have an account? <a href="#" id="mode-toggle">Sign in</a>';
+    nameField.classList.add('visible');
+    passwordInput.autocomplete = 'new-password';
+    document.getElementById('mode-toggle').addEventListener('click', (e) => {
+      e.preventDefault();
+      mode = 'login';
+      _updateMode();
+    });
+  } else {
+    authTitle.textContent   = 'Welcome back';
+    authSubtitle.textContent = 'Sign in to continue';
+    submitBtn.textContent   = 'Sign in';
+    authSwitch.innerHTML    = 'Don\'t have an account? <a href="#" id="mode-toggle">Create one</a>';
+    nameField.classList.remove('visible');
+    nameInput.value         = '';
+    passwordInput.autocomplete = 'current-password';
+    document.getElementById('mode-toggle').addEventListener('click', (e) => {
+      e.preventDefault();
+      mode = 'register';
+      _updateMode();
+    });
+  }
+}
+
+// ── Form submit ──────────────────────────────────────────────────────
+
+document.getElementById('auth-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  clearError();
+
+  const email    = document.getElementById('email').value.trim();
+  const password = document.getElementById('password').value;
+  const name     = nameInput.value.trim();
+
+  if (!email || !password) {
+    showError('Please fill in all fields.');
+    return;
+  }
+
+  if (password.length < 8) {
+    showError('Password must be at least 8 characters.');
+    return;
+  }
+
+  if (mode === 'register' && !name) {
+    showError('Please enter your name.');
+    return;
+  }
+
+  submitBtn.classList.add('btn-loading');
+  submitBtn.disabled = true;
+
+  try {
+    if (mode === 'login') {
+      await login(email, password);
+    } else {
+      await register(email, password, name);
+    }
+
+    const next = new URLSearchParams(window.location.search).get('next');
+    window.location.href = next && next.startsWith('/') ? next : '/new';
+
+  } catch (err) {
+    showError(err.message || 'Something went wrong. Please try again.');
+  } finally {
+    submitBtn.classList.remove('btn-loading');
+    submitBtn.disabled = false;
+  }
+});
+
+// ── Helpers ──────────────────────────────────────────────────────────
+
+function showError(msg) {
+  const el = document.getElementById('auth-error');
+  el.textContent = msg;
+  el.classList.add('visible');
+}
+
+function clearError() {
+  const el = document.getElementById('auth-error');
+  el.textContent = '';
+  el.classList.remove('visible');
+}
+</script>
+
+</body>
+</html>
