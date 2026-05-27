@@ -6,1206 +6,558 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="robots" content="noindex, nofollow" />
   <title>Operator — SIA</title>
-
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css" />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js" defer></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/9.1.6/marked.min.js" defer></script>
-
   <link rel="stylesheet" href="/src/css/base.css" />
   <link rel="stylesheet" href="/src/css/components.css" />
-
   <style>
-    /* ── Op Shell ──────────────────────────────────────────────────── */
-    .op-shell { display:flex; height:100dvh; overflow:hidden; }
-
-    /* ── Op Sidebar ────────────────────────────────────────────────── */
-    .op-sidebar {
-      width: 280px; flex-shrink:0; background:var(--bg-2);
-      border-right:1px solid var(--border-soft);
-      display:flex; flex-direction:column; height:100dvh; overflow:hidden;
-    }
-    .op-sidebar-header {
-      padding:var(--space-4); border-bottom:1px solid var(--border-soft);
-      display:flex; align-items:center; gap:var(--space-3);
-    }
-    .op-logo-mark {
-      width:32px; height:32px; background:var(--error);
-      border-radius:var(--radius-md); display:flex;
-      align-items:center; justify-content:center; flex-shrink:0;
-    }
-    .op-logo-text { font-size:var(--text-md); font-weight:var(--weight-semibold); letter-spacing:-0.02em; }
-    .op-logo-sub  { font-size:var(--text-xs); color:var(--text-muted); margin-top:1px; }
-    .op-nav { flex:1; overflow-y:auto; padding:var(--space-2); }
-    .op-nav-item {
-      display:flex; align-items:center; gap:var(--space-3);
-      padding:var(--space-2) var(--space-3); border-radius:var(--radius-md);
-      font-size:var(--text-sm); color:var(--text-secondary); cursor:pointer;
-      transition:background var(--duration-fast), color var(--duration-fast);
-      user-select:none; margin-bottom:2px;
-    }
-    .op-nav-item:hover { background:var(--surface); color:var(--text); }
-    .op-nav-item.active { background:var(--surface-2); color:var(--text); }
-    .op-nav-item svg { flex-shrink:0; opacity:0.7; }
-    .op-nav-item.active svg { opacity:1; }
-    .op-nav-badge {
-      margin-left:auto; background:var(--accent); color:white;
-      font-size:10px; font-weight:var(--weight-semibold);
-      padding:1px 6px; border-radius:var(--radius-full); min-width:18px; text-align:center;
-    }
-    .op-nav-badge.red { background:var(--error); }
-    .op-sidebar-footer {
-      border-top:1px solid var(--border-soft); padding:var(--space-3) var(--space-4);
-    }
-    .op-admin-info { display:flex; align-items:center; gap:var(--space-2); }
-    .op-admin-avatar {
-      width:28px; height:28px; border-radius:var(--radius-full);
-      background:var(--error); display:flex; align-items:center;
-      justify-content:center; font-size:var(--text-xs); font-weight:var(--weight-semibold); color:white;
-    }
-    .op-admin-name { font-size:var(--text-sm); font-weight:var(--weight-medium); }
-    .op-admin-role { font-size:var(--text-xs); color:var(--text-muted); }
-
-    /* ── Main Panel ────────────────────────────────────────────────── */
-    .op-main { flex:1; display:flex; flex-direction:column; min-width:0; overflow:hidden; }
-    .op-topbar {
-      height:var(--header-height); display:flex; align-items:center;
-      padding:0 var(--space-5); border-bottom:1px solid var(--border-soft);
-      gap:var(--space-4); flex-shrink:0; background:var(--bg);
-    }
-    .op-topbar-title { font-size:var(--text-md); font-weight:var(--weight-semibold); flex:1; }
-    .op-content { flex:1; overflow-y:auto; padding:var(--space-5); }
-
-    /* ── Tabs ──────────────────────────────────────────────────────── */
-    .op-tab { display:none; }
-    .op-tab.active { display:block; }
-
-    /* ── Stats Row ─────────────────────────────────────────────────── */
-    .stats-grid {
-      display:grid; grid-template-columns:repeat(4,1fr); gap:var(--space-4); margin-bottom:var(--space-5);
-    }
-    .stat-card {
-      background:var(--surface); border:1px solid var(--border);
-      border-radius:var(--radius-lg); padding:var(--space-4) var(--space-5);
-    }
-    .stat-label { font-size:var(--text-xs); color:var(--text-muted); text-transform:uppercase; letter-spacing:0.06em; margin-bottom:var(--space-2); }
-    .stat-value { font-size:1.6rem; font-weight:var(--weight-semibold); color:var(--text); letter-spacing:-0.03em; line-height:1; }
-    .stat-sub   { font-size:var(--text-xs); color:var(--text-muted); margin-top:var(--space-1); }
-
-    /* ── Users List ────────────────────────────────────────────────── */
-    .section-title {
-      font-size:var(--text-sm); font-weight:var(--weight-semibold); color:var(--text-secondary);
-      text-transform:uppercase; letter-spacing:0.06em; margin-bottom:var(--space-3);
-    }
-    .user-table { width:100%; border-collapse:collapse; }
-    .user-table th {
-      text-align:left; font-size:var(--text-xs); font-weight:var(--weight-medium);
-      color:var(--text-muted); text-transform:uppercase; letter-spacing:0.06em;
-      padding:var(--space-2) var(--space-3); border-bottom:1px solid var(--border);
-    }
-    .user-table td {
-      padding:var(--space-3) var(--space-3); border-bottom:1px solid var(--border-soft);
-      font-size:var(--text-sm); color:var(--text-secondary); vertical-align:middle;
-    }
-    .user-table tr:last-child td { border-bottom:none; }
-    .user-table tr:hover td { background:var(--surface); color:var(--text); }
-    .user-table tr { cursor:pointer; transition:background var(--duration-fast); }
-
-    .presence-dot {
-      width:8px; height:8px; border-radius:var(--radius-full);
-      display:inline-block; margin-right:6px; flex-shrink:0;
-    }
-    .presence-dot.online  { background:var(--success); box-shadow:0 0 0 2px rgba(52,211,153,0.2); }
-    .presence-dot.away    { background:var(--warning); }
-    .presence-dot.offline { background:var(--surface-3); }
-
-    /* ── Conversation Panel (split view) ───────────────────────────── */
-    .op-split { display:flex; gap:var(--space-4); height:calc(100dvh - var(--header-height) - var(--space-10)); }
-    .op-conv-list { width:300px; flex-shrink:0; display:flex; flex-direction:column; gap:var(--space-2); overflow-y:auto; }
-    .op-conv-item {
-      background:var(--surface); border:1px solid var(--border-soft);
-      border-radius:var(--radius-lg); padding:var(--space-3) var(--space-4);
-      cursor:pointer; transition:border-color var(--duration-fast), background var(--duration-fast);
-    }
-    .op-conv-item:hover  { border-color:var(--border); background:var(--surface-2); }
-    .op-conv-item.active { border-color:var(--accent); background:var(--accent-glow); }
-    .op-conv-user  { font-size:var(--text-sm); font-weight:var(--weight-medium); color:var(--text); margin-bottom:2px; }
-    .op-conv-title { font-size:var(--text-xs); color:var(--text-muted); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-    .op-conv-meta  { display:flex; align-items:center; gap:var(--space-2); margin-top:var(--space-1); }
-    .op-conv-time  { font-size:10px; color:var(--text-muted); margin-left:auto; }
-
-    /* ── Conversation View ─────────────────────────────────────────── */
-    .op-conv-view {
-      flex:1; background:var(--surface); border:1px solid var(--border);
-      border-radius:var(--radius-lg); display:flex; flex-direction:column; overflow:hidden; min-width:0;
-    }
-    .op-conv-header {
-      padding:var(--space-3) var(--space-4); border-bottom:1px solid var(--border-soft);
-      display:flex; align-items:center; gap:var(--space-3); flex-shrink:0;
-    }
-    .op-conv-header-info { flex:1; min-width:0; }
-    .op-conv-header-user { font-size:var(--text-sm); font-weight:var(--weight-medium); color:var(--text); }
-    .op-conv-header-sub  { font-size:var(--text-xs); color:var(--text-muted); }
-    .op-messages {
-      flex:1; overflow-y:auto; padding:var(--space-4);
-      display:flex; flex-direction:column; gap:var(--space-3);
-    }
-    .op-msg {
-      max-width:80%; padding:var(--space-3) var(--space-4);
-      border-radius:var(--radius-lg); font-size:var(--text-sm); line-height:var(--leading-relaxed);
-    }
-    .op-msg.user      { background:var(--surface-2); align-self:flex-end; border-bottom-right-radius:var(--radius-sm); }
-    .op-msg.assistant { background:var(--accent-dim); border:1px solid rgba(108,99,255,0.2); align-self:flex-start; border-bottom-left-radius:var(--radius-sm); }
-    .op-msg.pending   { background:var(--surface-2); opacity:0.7; align-self:flex-start; border:1px dashed var(--border); }
-    .op-msg-meta      { font-size:10px; color:var(--text-muted); margin-top:4px; }
-
-    /* ── Admin Reply Composer ──────────────────────────────────────── */
-    .op-composer {
-      border-top:1px solid var(--border-soft); padding:var(--space-4); flex-shrink:0;
-      display:flex; flex-direction:column; gap:var(--space-3);
-    }
-    .op-composer-toolbar {
-      display:flex; gap:var(--space-1); flex-wrap:wrap; align-items:center;
-      padding-bottom:var(--space-2); border-bottom:1px solid var(--border-soft);
-    }
-    .op-tool-btn {
-      display:flex; align-items:center; justify-content:center;
-      width:28px; height:28px; border-radius:var(--radius-sm);
-      font-size:var(--text-xs); font-weight:var(--weight-semibold);
-      color:var(--text-muted); transition:background var(--duration-fast), color var(--duration-fast);
-      font-family:var(--font-sans);
-    }
-    .op-tool-btn:hover { background:var(--surface-2); color:var(--text); }
-    .op-tool-btn.active { background:var(--accent-dim); color:var(--accent); }
-    .op-tool-sep { width:1px; height:18px; background:var(--border); margin:0 var(--space-1); }
-
-    .op-composer-tabs { display:flex; gap:2px; }
-    .op-composer-tab {
-      padding:var(--space-1) var(--space-3); border-radius:var(--radius-sm);
-      font-size:var(--text-xs); font-weight:var(--weight-medium); color:var(--text-muted);
-      cursor:pointer; transition:background var(--duration-fast), color var(--duration-fast);
-    }
-    .op-composer-tab.active { background:var(--surface-2); color:var(--text); }
-
-    .op-composer-area { position:relative; }
-    #op-reply-input {
-      width:100%; min-height:100px; max-height:240px;
-      background:var(--surface-2); border:1px solid var(--border);
-      border-radius:var(--radius-md); padding:var(--space-3) var(--space-4);
-      font-size:var(--text-sm); color:var(--text); resize:vertical;
-      font-family:var(--font-sans); line-height:var(--leading-relaxed);
-      transition:border-color var(--duration-fast);
-    }
-    #op-reply-input:focus { border-color:var(--accent); }
-    .op-preview {
-      display:none; min-height:100px; max-height:240px; overflow-y:auto;
-      background:var(--surface-2); border:1px solid var(--border);
-      border-radius:var(--radius-md); padding:var(--space-3) var(--space-4);
-      font-size:var(--text-sm); color:var(--text); line-height:var(--leading-relaxed);
-    }
-    .op-preview.visible { display:block; }
-
-    .op-composer-actions { display:flex; align-items:center; gap:var(--space-2); }
-    .op-composer-left    { display:flex; align-items:center; gap:var(--space-2); flex:1; }
-    .op-stream-toggle    { display:flex; align-items:center; gap:var(--space-2); font-size:var(--text-xs); color:var(--text-muted); }
-
-    /* Stream speed */
-    #op-stream-speed {
-      background:var(--surface-2); border:1px solid var(--border);
-      border-radius:var(--radius-sm); padding:2px var(--space-2);
-      font-size:var(--text-xs); color:var(--text-secondary);
-    }
-
-    /* ── Notes Panel ────────────────────────────────────────────────── */
-    .op-notes-panel {
-      width:260px; flex-shrink:0; background:var(--bg-2);
-      border:1px solid var(--border); border-radius:var(--radius-lg);
-      display:flex; flex-direction:column; overflow:hidden;
-    }
-    .op-notes-header {
-      padding:var(--space-3) var(--space-4); border-bottom:1px solid var(--border-soft);
-      font-size:var(--text-sm); font-weight:var(--weight-semibold);
-    }
-    .op-notes-list { flex:1; overflow-y:auto; padding:var(--space-2); display:flex; flex-direction:column; gap:var(--space-2); }
-    .op-note-item {
-      background:var(--surface); border:1px solid var(--border-soft);
-      border-radius:var(--radius-md); padding:var(--space-2) var(--space-3);
-      font-size:var(--text-xs); color:var(--text-secondary); line-height:var(--leading-relaxed);
-      position:relative;
-    }
-    .op-note-del {
-      position:absolute; top:4px; right:4px;
-      color:var(--text-muted); opacity:0; transition:opacity var(--duration-fast);
-    }
-    .op-note-item:hover .op-note-del { opacity:1; }
-    .op-note-del:hover { color:var(--error); }
-    .op-notes-add { padding:var(--space-2); border-top:1px solid var(--border-soft); display:flex; gap:var(--space-2); }
-    .op-notes-add textarea {
-      flex:1; resize:none; background:var(--surface);
-      border:1px solid var(--border); border-radius:var(--radius-sm);
-      padding:var(--space-2); font-size:var(--text-xs); color:var(--text);
-      font-family:var(--font-sans); min-height:52px;
-    }
-
-    /* ── Analytics Tab ──────────────────────────────────────────────── */
-    .analytics-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:var(--space-4); }
-    .analytics-card {
-      background:var(--surface); border:1px solid var(--border);
-      border-radius:var(--radius-lg); padding:var(--space-4) var(--space-5);
-    }
-    .analytics-card-title { font-size:var(--text-sm); font-weight:var(--weight-medium); margin-bottom:var(--space-3); color:var(--text-secondary); }
-    .analytics-bar-wrap { display:flex; flex-direction:column; gap:var(--space-2); }
-    .analytics-bar-row  { display:flex; align-items:center; gap:var(--space-3); font-size:var(--text-xs); }
-    .analytics-bar-label{ width:80px; color:var(--text-muted); flex-shrink:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-    .analytics-bar-track{ flex:1; height:6px; background:var(--surface-2); border-radius:var(--radius-full); overflow:hidden; }
-    .analytics-bar-fill { height:100%; background:var(--accent); border-radius:var(--radius-full); transition:width 0.6s var(--ease); }
-    .analytics-bar-val  { width:32px; text-align:right; color:var(--text-muted); flex-shrink:0; }
-
-    /* ── Login Screen ───────────────────────────────────────────────── */
-    .op-login-wrap {
-      display:flex; align-items:center; justify-content:center;
-      height:100dvh; background:var(--bg);
-    }
-    .op-login-card {
-      background:var(--surface); border:1px solid var(--border);
-      border-radius:var(--radius-xl); padding:var(--space-8);
-      width:100%; max-width:380px; box-shadow:var(--shadow-xl);
-      animation:cardIn 0.4s var(--ease) both;
-    }
-    @keyframes cardIn {
-      from { opacity:0; transform:translateY(16px) scale(0.98); }
-      to   { opacity:1; transform:translateY(0) scale(1); }
-    }
-    .op-login-header { text-align:center; margin-bottom:var(--space-6); }
-    .op-login-badge {
-      display:inline-block; background:rgba(248,113,113,0.1);
-      border:1px solid rgba(248,113,113,0.25); color:var(--error);
-      font-size:var(--text-xs); font-weight:var(--weight-medium);
-      padding:3px 10px; border-radius:var(--radius-full); margin-bottom:var(--space-3);
-      letter-spacing:0.04em; text-transform:uppercase;
-    }
-    .op-login-title { font-size:var(--text-lg); font-weight:var(--weight-semibold); letter-spacing:-0.02em; }
-
-    /* ── Presence indicator ─────────────────────────────────────────── */
-    .typing-user-badge {
-      display:inline-flex; align-items:center; gap:4px;
-      background:var(--accent-dim); border:1px solid rgba(108,99,255,0.25);
-      border-radius:var(--radius-full); padding:2px 8px;
-      font-size:10px; color:var(--accent);
-    }
-
-    /* Highlight floating menu */
-    .highlight-menu {
-      position:fixed; z-index:400; background:var(--surface);
-      border:1px solid var(--border); border-radius:var(--radius-lg);
-      box-shadow:var(--shadow-lg); display:flex; gap:2px; padding:4px;
-      animation:dropIn 0.12s var(--ease) both;
-    }
-    .highlight-menu-btn {
-      padding:var(--space-1) var(--space-2); border-radius:var(--radius-sm);
-      font-size:var(--text-xs); color:var(--text-secondary);
-      transition:background var(--duration-fast), color var(--duration-fast);
-      white-space:nowrap;
-    }
-    .highlight-menu-btn:hover { background:var(--surface-2); color:var(--text); }
-
-    @media(max-width:1100px) {
-      .stats-grid { grid-template-columns:repeat(2,1fr); }
-      .op-notes-panel { display:none; }
-    }
-    @media(max-width:768px) {
-      .op-sidebar { display:none; }
-      .stats-grid { grid-template-columns:1fr 1fr; }
-    }
+    .op-shell{display:flex;height:100dvh;overflow:hidden}
+    .op-nav{width:220px;flex-shrink:0;background:var(--bg-2);border-right:1px solid var(--border-soft);display:flex;flex-direction:column;padding:var(--space-4) var(--space-2);gap:var(--space-1)}
+    .op-logo{display:flex;align-items:center;gap:var(--space-2);padding:var(--space-2) var(--space-3);margin-bottom:var(--space-4)}
+    .op-logo-mark{width:28px;height:28px;background:var(--error);border-radius:var(--radius-md);display:flex;align-items:center;justify-content:center}
+    .op-logo-text{font-size:var(--text-md);font-weight:var(--weight-semibold);color:var(--text)}
+    .op-logo-sub{font-size:var(--text-xs);color:var(--text-muted);letter-spacing:.05em;margin-top:1px}
+    .nav-item{display:flex;align-items:center;gap:var(--space-2);padding:var(--space-2) var(--space-3);border-radius:var(--radius-md);font-size:var(--text-sm);color:var(--text-secondary);cursor:pointer;text-decoration:none;transition:background var(--duration-fast),color var(--duration-fast)}
+    .nav-item:hover{background:var(--surface);color:var(--text)}
+    .nav-item.active{background:var(--surface-2);color:var(--text)}
+    .nav-badge{margin-left:auto;background:var(--error);color:white;font-size:10px;font-weight:600;padding:1px 6px;border-radius:var(--radius-full);min-width:18px;text-align:center}
+    .op-nav-footer{margin-top:auto;padding-top:var(--space-4);border-top:1px solid var(--border-soft)}
+    .op-main{flex:1;overflow:hidden;display:flex;flex-direction:column}
+    .op-topbar{height:var(--header-height);display:flex;align-items:center;padding:0 var(--space-6);border-bottom:1px solid var(--border-soft);gap:var(--space-4);flex-shrink:0;background:var(--bg)}
+    .op-topbar-title{font-size:var(--text-md);font-weight:var(--weight-semibold);flex:1}
+    .op-content{flex:1;overflow-y:auto;padding:var(--space-6)}
+    .op-panel{display:none}
+    .op-panel.active{display:block}
+    .stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:var(--space-4);margin-bottom:var(--space-6)}
+    .stat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:var(--space-4) var(--space-5)}
+    .stat-label{font-size:var(--text-xs);color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:var(--space-1)}
+    .stat-value{font-size:1.8rem;font-weight:var(--weight-semibold);color:var(--text);line-height:1}
+    .stat-sub{font-size:var(--text-xs);color:var(--text-muted);margin-top:var(--space-1)}
+    .section-title{font-size:var(--text-base);font-weight:var(--weight-semibold);margin-bottom:var(--space-3);color:var(--text)}
+    .data-table{width:100%;border-collapse:collapse;font-size:var(--text-sm)}
+    .data-table th{text-align:left;padding:var(--space-2) var(--space-3);border-bottom:1px solid var(--border);color:var(--text-muted);font-weight:var(--weight-medium);font-size:var(--text-xs);text-transform:uppercase;letter-spacing:.05em;white-space:nowrap}
+    .data-table td{padding:var(--space-3) var(--space-3);border-bottom:1px solid var(--border-soft);color:var(--text-secondary);vertical-align:middle}
+    .data-table tr:hover td{background:var(--surface)}
+    .data-table tr:last-child td{border-bottom:none}
+    .table-wrap{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;margin-bottom:var(--space-6)}
+    .presence-dot{width:8px;height:8px;border-radius:50%;display:inline-block;margin-right:6px}
+    .presence-dot.active{background:var(--success);box-shadow:0 0 6px var(--success)}
+    .presence-dot.away{background:var(--warning)}
+    .presence-dot.offline{background:var(--text-muted)}
+    .reply-shell{display:flex;height:100%;gap:var(--space-4)}
+    .conv-list-panel{width:280px;flex-shrink:0;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);overflow-y:auto;display:flex;flex-direction:column}
+    .conv-list-header{padding:var(--space-3) var(--space-4);border-bottom:1px solid var(--border-soft);font-size:var(--text-sm);font-weight:var(--weight-semibold);flex-shrink:0}
+    .conv-list-item{padding:var(--space-3) var(--space-4);cursor:pointer;border-bottom:1px solid var(--border-soft);transition:background var(--duration-fast)}
+    .conv-list-item:hover{background:var(--surface-2)}
+    .conv-list-item.active{background:var(--accent-dim);border-left:2px solid var(--accent)}
+    .conv-list-title{font-size:var(--text-sm);color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .conv-list-meta{font-size:var(--text-xs);color:var(--text-muted);margin-top:2px}
+    .pending-badge{background:var(--error);color:white;font-size:10px;padding:1px 5px;border-radius:var(--radius-full);margin-left:6px}
+    .msg-view-panel{flex:1;display:flex;flex-direction:column;min-width:0;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden}
+    .msg-view-header{padding:var(--space-3) var(--space-4);border-bottom:1px solid var(--border-soft);display:flex;align-items:center;gap:var(--space-3);flex-shrink:0}
+    .msg-view-title{font-size:var(--text-sm);font-weight:var(--weight-semibold);flex:1}
+    .msg-view-scroll{flex:1;overflow-y:auto;padding:var(--space-4);display:flex;flex-direction:column;gap:var(--space-3)}
+    .op-msg{padding:var(--space-3) var(--space-4);border-radius:var(--radius-lg);font-size:var(--text-sm);line-height:var(--leading-relaxed)}
+    .op-msg-user{background:var(--surface-2);color:var(--text)}
+    .op-msg-assistant{background:var(--accent-dim);border:1px solid rgba(108,99,255,.2);color:var(--text)}
+    .op-msg-pending{background:rgba(251,191,36,.1);border:1px solid rgba(251,191,36,.25);color:var(--text);font-style:italic}
+    .op-msg-meta{font-size:var(--text-xs);color:var(--text-muted);margin-top:var(--space-1);display:flex;align-items:center;gap:var(--space-3);flex-wrap:wrap}
+    .reply-composer{border-top:1px solid var(--border-soft);padding:var(--space-4);flex-shrink:0;display:flex;flex-direction:column;gap:var(--space-3)}
+    .composer-toolbar{display:flex;align-items:center;gap:var(--space-1);flex-wrap:wrap;padding-bottom:var(--space-2);border-bottom:1px solid var(--border-soft)}
+    .toolbar-btn{display:flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:var(--radius-sm);font-size:var(--text-xs);color:var(--text-muted);transition:color var(--duration-fast),background var(--duration-fast);font-family:var(--font-mono)}
+    .toolbar-btn:hover{background:var(--surface-2);color:var(--text)}
+    .composer-tabs{display:flex;gap:var(--space-2);margin-bottom:var(--space-2)}
+    .composer-tab{font-size:var(--text-xs);padding:var(--space-1) var(--space-3);border-radius:var(--radius-sm);cursor:pointer;color:var(--text-muted);background:var(--surface-2);transition:background var(--duration-fast),color var(--duration-fast)}
+    .composer-tab.active{background:var(--accent);color:white}
+    .composer-textarea{width:100%;min-height:120px;max-height:300px;background:var(--surface-2);border:1px solid var(--border);border-radius:var(--radius-md);padding:var(--space-3);font-size:var(--text-sm);color:var(--text);font-family:var(--font-mono);resize:vertical;line-height:1.6}
+    .composer-textarea:focus{border-color:var(--accent)}
+    .composer-preview{display:none;min-height:120px;max-height:300px;overflow-y:auto;background:var(--surface-2);border:1px solid var(--border);border-radius:var(--radius-md);padding:var(--space-3);font-size:var(--text-sm);color:var(--text);line-height:var(--leading-relaxed)}
+    .composer-preview.visible{display:block}
+    .composer-footer{display:flex;align-items:center;gap:var(--space-2);justify-content:space-between}
+    .stream-indicator{display:none;align-items:center;gap:var(--space-2);font-size:var(--text-xs);color:var(--warning)}
+    .stream-indicator.active{display:flex}
+    .notes-sidebar{width:260px;flex-shrink:0;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);display:flex;flex-direction:column;overflow:hidden}
+    .notes-header{padding:var(--space-3) var(--space-4);border-bottom:1px solid var(--border-soft);font-size:var(--text-sm);font-weight:var(--weight-semibold)}
+    .notes-list{flex:1;overflow-y:auto;padding:var(--space-2);display:flex;flex-direction:column;gap:var(--space-2)}
+    .note-card{background:var(--surface-2);border-radius:var(--radius-md);padding:var(--space-3);font-size:var(--text-xs);color:var(--text-secondary)}
+    .note-card-tag{display:inline-block;background:var(--accent-dim);color:var(--accent);padding:1px 6px;border-radius:var(--radius-full);font-size:10px;margin-bottom:var(--space-1)}
+    .note-card-body{color:var(--text);line-height:var(--leading-relaxed)}
+    .note-card-meta{color:var(--text-muted);margin-top:var(--space-1)}
+    .notes-add{padding:var(--space-3);border-top:1px solid var(--border-soft);display:flex;flex-direction:column;gap:var(--space-2)}
+    .notes-add textarea{width:100%;background:var(--surface-2);border:1px solid var(--border);border-radius:var(--radius-md);padding:var(--space-2);font-size:var(--text-xs);color:var(--text);resize:none;height:64px}
+    .op-login{display:flex;align-items:center;justify-content:center;min-height:100dvh;background:var(--bg);padding:var(--space-4)}
+    .op-login-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-xl);padding:var(--space-8);width:100%;max-width:380px;box-shadow:var(--shadow-xl)}
+    .op-error{display:none;background:rgba(248,113,113,.1);border:1px solid rgba(248,113,113,.25);border-radius:var(--radius-md);padding:var(--space-3);font-size:var(--text-sm);color:var(--error);margin-bottom:var(--space-4)}
+    .op-error.visible{display:block}
+    .citation-row{display:flex;gap:var(--space-2);margin-bottom:var(--space-2)}
+    @media(max-width:900px){.stats-grid{grid-template-columns:repeat(2,1fr)}.reply-shell{flex-direction:column}.conv-list-panel{width:100%;max-height:200px}.notes-sidebar{display:none}}
   </style>
 </head>
 <body>
 
-<!-- ── Login Screen ───────────────────────────────────────────────── -->
-<div class="op-login-wrap" id="op-login-wrap">
+<div id="op-login-screen" class="op-login">
   <div class="op-login-card">
-    <div class="op-login-header">
-      <div class="op-login-badge">Operator Access</div>
-      <h1 class="op-login-title">SIA Control Panel</h1>
+    <div style="display:flex;align-items:center;gap:var(--space-2);margin-bottom:var(--space-6);">
+      <div class="op-logo-mark"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+      <div><div style="font-size:var(--text-md);font-weight:var(--weight-semibold)">SIA Operator</div><div style="font-size:var(--text-xs);color:var(--text-muted)">Admin access only</div></div>
     </div>
-    <div id="op-login-error" class="auth-error" role="alert" style="display:none;margin-bottom:var(--space-4);background:rgba(248,113,113,0.1);border:1px solid rgba(248,113,113,0.25);border-radius:var(--radius-md);padding:var(--space-3) var(--space-4);font-size:var(--text-sm);color:var(--error);"></div>
-    <div class="form-group">
-      <label class="form-label" for="op-email">Email</label>
-      <input class="form-input" id="op-email" type="email" placeholder="admin@example.com" autocomplete="username" />
+    <div class="op-error" id="op-error"></div>
+    <div id="op-login-form">
+      <div class="form-group"><label class="form-label">Email</label><input class="form-input" id="op-email" type="email" placeholder="admin@example.com" /></div>
+      <div class="form-group"><label class="form-label">Password</label><input class="form-input" id="op-password" type="password" placeholder="••••••••••••" /></div>
+      <button class="btn btn-primary" id="op-login-btn" style="width:100%;margin-top:var(--space-2)">Sign in</button>
+      <div style="margin-top:var(--space-5);text-align:center;"><a href="#" id="op-show-register" style="font-size:var(--text-xs);color:var(--text-muted)">First time? Create admin account</a></div>
     </div>
-    <div class="form-group">
-      <label class="form-label" for="op-password">Password</label>
-      <input class="form-input" id="op-password" type="password" placeholder="••••••••" autocomplete="current-password" />
+    <div id="op-register-form" style="display:none">
+      <div class="form-group"><label class="form-label">Name</label><input class="form-input" id="op-reg-name" type="text" placeholder="Admin name" /></div>
+      <div class="form-group"><label class="form-label">Email</label><input class="form-input" id="op-reg-email" type="email" /></div>
+      <div class="form-group"><label class="form-label">Password (min 12)</label><input class="form-input" id="op-reg-password" type="password" /></div>
+      <div class="form-group"><label class="form-label">Setup key <span style="color:var(--text-muted)">(additional admins)</span></label><input class="form-input" id="op-setup-key" type="text" /></div>
+      <button class="btn btn-primary" id="op-register-btn" style="width:100%;margin-top:var(--space-2)">Create account</button>
+      <div style="margin-top:var(--space-4);text-align:center;"><a href="#" id="op-show-login" style="font-size:var(--text-xs);color:var(--text-muted)">Back to sign in</a></div>
     </div>
-    <button class="btn btn-primary" id="op-login-btn" style="width:100%;padding:var(--space-3);margin-top:var(--space-2);">Sign in</button>
-    <p style="text-align:center;margin-top:var(--space-4);font-size:var(--text-xs);color:var(--text-muted);">
-      New operator? <a href="#" id="op-register-link" style="color:var(--error);">Create admin account</a>
-    </p>
   </div>
 </div>
 
-<!-- ── Op Shell (hidden until auth) ──────────────────────────────── -->
-<div class="op-shell" id="op-shell" style="display:none;">
-
-  <!-- Sidebar -->
-  <aside class="op-sidebar">
-    <div class="op-sidebar-header">
-      <div class="op-logo-mark" aria-hidden="true">
-        <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-          <path d="M3 13 Q9 3 15 13" stroke="white" stroke-width="1.8" fill="none" stroke-linecap="round"/>
-          <circle cx="9" cy="7" r="2" fill="white"/>
-        </svg>
-      </div>
-      <div>
-        <div class="op-logo-text">SIA</div>
-        <div class="op-logo-sub">Operator Panel</div>
-      </div>
+<div id="op-shell" class="op-shell" style="display:none">
+  <nav class="op-nav">
+    <div class="op-logo">
+      <div class="op-logo-mark"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+      <div><div class="op-logo-text">Operator</div><div class="op-logo-sub">SIA ADMIN</div></div>
     </div>
-
-    <nav class="op-nav">
-      <div class="op-nav-item active" data-tab="dashboard">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
-        Dashboard
-        <span class="op-nav-badge" id="nav-active-badge">0</span>
-      </div>
-      <div class="op-nav-item" data-tab="conversations">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-        Conversations
-        <span class="op-nav-badge red" id="nav-pending-badge" style="display:none;">!</span>
-      </div>
-      <div class="op-nav-item" data-tab="users">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-        Users
-      </div>
-      <div class="op-nav-item" data-tab="analytics">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
-        Analytics
-      </div>
-      <div class="op-nav-item" data-tab="admins">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-        Admins
-      </div>
-    </nav>
-
-    <div class="op-sidebar-footer">
-      <div class="op-admin-info">
-        <div class="op-admin-avatar" id="op-admin-avatar">—</div>
-        <div>
-          <div class="op-admin-name" id="op-admin-name">Admin</div>
-          <div class="op-admin-role">Operator</div>
-        </div>
-        <button class="action-btn" id="op-logout-btn" style="margin-left:auto;width:28px;height:28px;" title="Sign out" aria-label="Sign out">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-        </button>
-      </div>
+    <a class="nav-item active" data-panel="dashboard" href="#"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>Dashboard</a>
+    <a class="nav-item" data-panel="reply" href="#"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Reply Queue<span class="nav-badge" id="queue-badge" style="display:none">0</span></a>
+    <a class="nav-item" data-panel="users" href="#"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>Users</a>
+    <a class="nav-item" data-panel="analytics" href="#"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>Analytics</a>
+    <a class="nav-item" data-panel="expiry" href="#"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>Expiring Chats</a>
+    <a class="nav-item" data-panel="settings" href="#"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>Settings</a>
+    <div class="op-nav-footer">
+      <div class="nav-item" id="op-logout-btn"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>Sign out</div>
+      <div style="padding:var(--space-2) var(--space-3);font-size:var(--text-xs);color:var(--text-muted)" id="op-admin-name"></div>
     </div>
-  </aside>
+  </nav>
 
-  <!-- Main -->
-  <main class="op-main">
+  <div class="op-main">
     <div class="op-topbar">
-      <span class="op-topbar-title" id="op-topbar-title">Dashboard</span>
-      <button class="btn btn-secondary btn-sm" id="op-refresh-btn">
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
-        Refresh
-      </button>
+      <span class="op-topbar-title" id="op-panel-title">Dashboard</span>
+      <span style="font-size:var(--text-xs);color:var(--text-muted)">Auto-refreshing every 15s</span>
+      <button class="btn btn-secondary btn-sm" id="op-refresh-btn">Refresh</button>
     </div>
+    <div class="op-content" id="op-content">
 
-    <div class="op-content">
-
-      <!-- Dashboard Tab -->
-      <div class="op-tab active" id="tab-dashboard">
-        <div class="stats-grid" id="stats-grid">
-          <div class="stat-card"><div class="stat-label">Active Users</div><div class="stat-value" id="stat-active">0</div><div class="stat-sub">Online now</div></div>
-          <div class="stat-card"><div class="stat-label">Pending Replies</div><div class="stat-value" id="stat-pending" style="color:var(--warning);">0</div><div class="stat-sub">Need response</div></div>
-          <div class="stat-card"><div class="stat-label">Total Chats</div><div class="stat-value" id="stat-chats">0</div><div class="stat-sub">All time</div></div>
-          <div class="stat-card"><div class="stat-label">Total Messages</div><div class="stat-value" id="stat-messages">0</div><div class="stat-sub">All time</div></div>
+      <!-- Dashboard -->
+      <div class="op-panel active" id="panel-dashboard">
+        <div class="stats-grid">
+          <div class="stat-card"><div class="stat-label">Active Users</div><div class="stat-value" id="stat-active">—</div><div class="stat-sub">Last 5 min</div></div>
+          <div class="stat-card"><div class="stat-label">Pending Replies</div><div class="stat-value" id="stat-pending" style="color:var(--warning)">—</div><div class="stat-sub">Awaiting response</div></div>
+          <div class="stat-card"><div class="stat-label">Total Conversations</div><div class="stat-value" id="stat-convs">—</div><div class="stat-sub">All time</div></div>
+          <div class="stat-card"><div class="stat-label">Reactions (24h)</div><div class="stat-value" id="stat-reactions">—</div><div class="stat-sub" id="stat-reactions-sub"></div></div>
         </div>
-
         <div class="section-title">Live Users</div>
-        <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;margin-bottom:var(--space-5);">
-          <table class="user-table" id="live-users-table">
-            <thead>
-              <tr>
-                <th>User</th>
-                <th>Status</th>
-                <th>Current Chat</th>
-                <th>Session</th>
-                <th>Device</th>
-                <th>Assigned To</th>
-                <th></th>
-              </tr>
-            </thead>
-            <tbody id="live-users-body">
-              <tr><td colspan="7" style="text-align:center;color:var(--text-muted);padding:var(--space-6);">No active users</td></tr>
-            </tbody>
-          </table>
-        </div>
+        <div class="table-wrap"><table class="data-table"><thead><tr><th>Status</th><th>User</th><th>Conversation</th><th>Typing</th><th>Last seen</th><th>Action</th></tr></thead><tbody id="live-users-tbody"></tbody></table></div>
+        <div class="section-title">Pending Queue</div>
+        <div class="table-wrap"><table class="data-table"><thead><tr><th>User</th><th>Conversation</th><th>Waiting since</th><th>Assigned</th><th>Action</th></tr></thead><tbody id="queue-tbody"></tbody></table></div>
+      </div>
 
-        <div class="section-title">Pending Responses</div>
-        <div id="pending-responses-list" style="display:flex;flex-direction:column;gap:var(--space-2);">
-          <p style="color:var(--text-muted);font-size:var(--text-sm);">No pending responses</p>
+      <!-- Reply -->
+      <div class="op-panel" id="panel-reply" style="height:calc(100dvh - var(--header-height) - 3rem);overflow:hidden">
+        <div class="reply-shell" style="height:100%">
+          <div class="conv-list-panel">
+            <div class="conv-list-header">Conversations</div>
+            <div id="op-conv-list" style="flex:1;overflow-y:auto"></div>
+          </div>
+          <div class="msg-view-panel">
+            <div class="msg-view-header">
+              <span class="msg-view-title" id="msg-view-title">Select a conversation</span>
+              <button class="btn btn-secondary btn-sm" id="assign-btn">Claim</button>
+              <button class="btn btn-secondary btn-sm" id="unassign-btn" style="display:none">Release</button>
+            </div>
+            <div class="msg-view-scroll" id="msg-view-scroll"></div>
+            <div class="reply-composer" id="reply-composer">
+              <div class="composer-tabs">
+                <div class="composer-tab active" data-tab="write">Write</div>
+                <div class="composer-tab" data-tab="preview">Preview</div>
+                <div class="composer-tab" data-tab="stream">Stream mode</div>
+              </div>
+              <div class="composer-toolbar">
+                <button class="toolbar-btn" data-md="**" title="Bold"><b>B</b></button>
+                <button class="toolbar-btn" data-md="_" title="Italic"><i>I</i></button>
+                <button class="toolbar-btn" data-md="## " title="Heading">H</button>
+                <button class="toolbar-btn" data-md="`" title="Code">`</button>
+                <button class="toolbar-btn" data-md="```\n" title="Code block">{ }</button>
+                <button class="toolbar-btn" data-md="> " title="Quote">"</button>
+                <button class="toolbar-btn" data-md="- " title="List">•</button>
+              </div>
+              <textarea class="composer-textarea" id="composer-textarea" placeholder="Type a response... Markdown supported"></textarea>
+              <div class="composer-preview" id="composer-preview"></div>
+              <div>
+                <div style="font-size:var(--text-xs);color:var(--text-muted);margin-bottom:var(--space-1);cursor:pointer" id="toggle-citations">+ Add citations</div>
+                <div id="citations-editor" style="display:none;flex-direction:column;gap:var(--space-2)">
+                  <div id="citation-rows"></div>
+                  <span style="font-size:var(--text-xs);color:var(--accent);cursor:pointer" id="add-citation-row">+ Add source</span>
+                </div>
+              </div>
+              <div class="composer-footer">
+                <div class="stream-indicator" id="stream-indicator"><span class="presence-dot active"></span>Streaming...</div>
+                <div style="display:flex;gap:var(--space-2)">
+                  <button class="btn btn-secondary btn-sm" id="stream-chunk-btn" style="display:none">Send chunk</button>
+                  <button class="btn btn-danger btn-sm" id="stream-finish-btn" style="display:none">Finish stream</button>
+                  <button class="btn btn-primary" id="send-reply-btn" disabled>Send reply</button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="notes-sidebar">
+            <div class="notes-header">Internal Notes</div>
+            <div class="notes-list" id="notes-list"></div>
+            <div class="notes-add">
+              <textarea id="note-textarea" placeholder="Add a note..."></textarea>
+              <div style="display:flex;gap:var(--space-2)">
+                <input class="form-input" id="note-tag" placeholder="Tag" style="font-size:var(--text-xs);padding:var(--space-1) var(--space-2)" />
+                <button class="btn btn-secondary btn-sm" id="save-note-btn">Save</button>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
-      <!-- Conversations Tab -->
-      <div class="op-tab" id="tab-conversations">
-        <div style="display:flex;align-items:center;gap:var(--space-3);margin-bottom:var(--space-4);">
-          <div class="section-title" style="margin:0;">All Conversations</div>
-          <input class="form-input" id="conv-search" placeholder="Search conversations..." style="max-width:240px;padding:var(--space-2) var(--space-3);font-size:var(--text-sm);" />
-        </div>
-        <div class="op-split">
-          <div class="op-conv-list" id="op-conv-list">
-            <p style="color:var(--text-muted);font-size:var(--text-sm);">Loading...</p>
-          </div>
-
-          <div class="op-conv-view" id="op-conv-view">
-            <div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--text-muted);font-size:var(--text-sm);">
-              Select a conversation to view and respond
-            </div>
-          </div>
-
-          <div class="op-notes-panel" id="op-notes-panel">
-            <div class="op-notes-header">Internal Notes</div>
-            <div class="op-notes-list" id="op-notes-list"><p style="color:var(--text-muted);font-size:var(--text-xs);padding:var(--space-2);">No notes yet.</p></div>
-            <div class="op-notes-add">
-              <textarea id="op-note-input" placeholder="Add a note..." maxlength="1000"></textarea>
-              <button class="btn btn-secondary btn-sm" id="op-note-save-btn" style="align-self:flex-end;">Save</button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Users Tab -->
-      <div class="op-tab" id="tab-users">
+      <!-- Users -->
+      <div class="op-panel" id="panel-users">
         <div class="section-title">All Users</div>
-        <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;">
-          <table class="user-table">
-            <thead>
-              <tr>
-                <th>Name</th>
-                <th>Email</th>
-                <th>Joined</th>
-                <th>Conversations</th>
-                <th>Last Active</th>
-                <th>Status</th>
-              </tr>
-            </thead>
-            <tbody id="all-users-body">
-              <tr><td colspan="6" style="text-align:center;color:var(--text-muted);padding:var(--space-6);">Loading...</td></tr>
-            </tbody>
-          </table>
-        </div>
+        <div class="table-wrap"><table class="data-table"><thead><tr><th>Name</th><th>Email</th><th>Status</th><th>Last seen</th><th>Joined</th></tr></thead><tbody id="users-tbody"></tbody></table></div>
       </div>
 
-      <!-- Analytics Tab -->
-      <div class="op-tab" id="tab-analytics">
-        <div class="analytics-grid">
-          <div class="analytics-card">
-            <div class="analytics-card-title">Reactions</div>
-            <div class="analytics-bar-wrap" id="reaction-bars">
-              <div class="analytics-bar-row">
-                <span class="analytics-bar-label">Helpful</span>
-                <div class="analytics-bar-track"><div class="analytics-bar-fill" id="bar-up" style="width:0%;background:var(--success);"></div></div>
-                <span class="analytics-bar-val" id="val-up">0</span>
-              </div>
-              <div class="analytics-bar-row">
-                <span class="analytics-bar-label">Not helpful</span>
-                <div class="analytics-bar-track"><div class="analytics-bar-fill" id="bar-down" style="width:0%;background:var(--error);"></div></div>
-                <span class="analytics-bar-val" id="val-down">0</span>
-              </div>
-            </div>
-          </div>
-          <div class="analytics-card">
-            <div class="analytics-card-title">Browsers</div>
-            <div class="analytics-bar-wrap" id="browser-bars"><p style="color:var(--text-muted);font-size:var(--text-sm);">Loading...</p></div>
-          </div>
-          <div class="analytics-card">
-            <div class="analytics-card-title">Response Times</div>
-            <div id="response-time-stats" style="font-size:var(--text-sm);color:var(--text-secondary);">Loading...</div>
-          </div>
-          <div class="analytics-card">
-            <div class="analytics-card-title">Expiring Chats</div>
-            <div id="expiring-chats-list" style="font-size:var(--text-sm);color:var(--text-secondary);">Loading...</div>
+      <!-- Analytics -->
+      <div class="op-panel" id="panel-analytics">
+        <div class="stats-grid" style="grid-template-columns:repeat(3,1fr)">
+          <div class="stat-card"><div class="stat-label">Total Sessions</div><div class="stat-value" id="an-sessions">—</div></div>
+          <div class="stat-card"><div class="stat-label">Thumbs Up</div><div class="stat-value" id="an-up" style="color:var(--success)">—</div></div>
+          <div class="stat-card"><div class="stat-label">Thumbs Down</div><div class="stat-value" id="an-down" style="color:var(--error)">—</div></div>
+        </div>
+        <div class="section-title">Messages Per Day (30 days)</div>
+        <div class="table-wrap"><table class="data-table"><thead><tr><th>Date</th><th>Messages</th></tr></thead><tbody id="analytics-tbody"></tbody></table></div>
+      </div>
+
+      <!-- Expiry -->
+      <div class="op-panel" id="panel-expiry">
+        <div class="section-title">Expiring Soon</div>
+        <div class="table-wrap"><table class="data-table"><thead><tr><th>User</th><th>Conversation</th><th>Expires</th><th>Action</th></tr></thead><tbody id="expiry-tbody"></tbody></table></div>
+        <div class="section-title">Recently Expired</div>
+        <div class="table-wrap"><table class="data-table"><thead><tr><th>User</th><th>Conversation</th><th>Expired</th></tr></thead><tbody id="expired-tbody"></tbody></table></div>
+      </div>
+
+      <!-- Settings -->
+      <div class="op-panel" id="panel-settings">
+        <div style="max-width:480px">
+          <div class="section-title">Platform Settings</div>
+          <div class="table-wrap" style="padding:var(--space-5)">
+            <div class="form-group"><label class="form-label">Chat expiry (days)</label><input class="form-input" id="set-expiry-days" type="number" min="1" max="365" /></div>
+            <div class="form-group"><label class="form-label">Warning before expiry (days)</label><input class="form-input" id="set-warn-days" type="number" min="1" max="30" /></div>
+            <div class="form-group"><label class="form-label">Max message length (chars)</label><input class="form-input" id="set-max-msg" type="number" /></div>
+            <div class="form-group" style="flex-direction:row;align-items:center;gap:var(--space-3)"><label class="toggle"><input type="checkbox" id="set-reg-enabled" /><span class="toggle-track"></span></label><span class="form-label" style="margin:0">Allow new user registrations</span></div>
+            <button class="btn btn-primary" id="save-settings-btn">Save settings</button>
           </div>
         </div>
       </div>
 
-      <!-- Admins Tab -->
-      <div class="op-tab" id="tab-admins">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--space-4);">
-          <div class="section-title" style="margin:0;">Admin Accounts</div>
-          <button class="btn btn-primary btn-sm" id="create-admin-btn">Add Admin</button>
-        </div>
-        <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;">
-          <table class="user-table">
-            <thead><tr><th>Name</th><th>Email</th><th>Created</th><th>Last Login</th><th></th></tr></thead>
-            <tbody id="admins-body">
-              <tr><td colspan="5" style="text-align:center;color:var(--text-muted);padding:var(--space-6);">Loading...</td></tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-    </div><!-- /op-content -->
-  </main>
-</div><!-- /op-shell -->
+    </div>
+  </div>
+</div>
 
 <script type="module">
-const API = '/api/op';
-let _adminToken = null;
-let _currentConvId = null;
-let _refreshTimer = null;
-let _streamAbort = null;
+const API='/api/admin';
+let _admin=null,_activeConvId=null,_streamMode=false,_citations=[];
 
-// ── Helpers ───────────────────────────────────────────────────────────
-
-async function opFetch(path, opts = {}) {
-  const res = await fetch(`${API}${path}`, {
-    credentials: 'include',
-    headers: { 'Content-Type': 'application/json', ...(opts.headers||{}) },
-    ...opts,
-  });
-  if (res.status === 401) { showLogin(); throw new Error('Unauthorized'); }
-  if (!res.ok) {
-    const b = await res.json().catch(()=>({}));
-    throw new Error(b.error || `Error ${res.status}`);
-  }
-  if (res.status === 204) return null;
-  return res.json();
+async function boot(){
+  const r=await fetch(`${API}/me`,{credentials:'include'});
+  const d=await r.json();
+  _admin=d.admin;
+  if(_admin)showDashboard();
 }
 
-function esc(s) {
-  if (!s) return '';
-  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-}
-
-function relTime(d) {
-  const diff = Math.floor((Date.now() - new Date(d)) / 1000);
-  if (diff < 60) return `${diff}s ago`;
-  if (diff < 3600) return `${Math.floor(diff/60)}m ago`;
-  if (diff < 86400) return `${Math.floor(diff/3600)}h ago`;
-  return `${Math.floor(diff/86400)}d ago`;
-}
-
-function toast(msg, type='info') {
-  const t = document.createElement('div');
-  t.style.cssText = `position:fixed;bottom:24px;right:24px;z-index:9999;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:12px 16px;font-size:var(--text-sm);color:var(--text);box-shadow:var(--shadow-lg);animation:msgIn 0.2s var(--ease);max-width:320px;`;
-  t.textContent = msg;
-  document.body.appendChild(t);
-  setTimeout(() => t.remove(), 3500);
-}
-
-// ── Auth ──────────────────────────────────────────────────────────────
-
-function showLogin() {
-  document.getElementById('op-login-wrap').style.display = 'flex';
-  document.getElementById('op-shell').style.display = 'none';
-}
-
-function showDashboard(admin) {
-  document.getElementById('op-login-wrap').style.display = 'none';
-  document.getElementById('op-shell').style.display = 'flex';
-  document.getElementById('op-admin-name').textContent = admin.display_name || admin.email;
-  document.getElementById('op-admin-avatar').textContent = (admin.display_name || admin.email).slice(0,2).toUpperCase();
-  startAutoRefresh();
+function showDashboard(){
+  document.getElementById('op-login-screen').style.display='none';
+  document.getElementById('op-shell').style.display='flex';
+  document.getElementById('op-admin-name').textContent=_admin.display_name||_admin.email;
   loadDashboard();
-  loadAllConversations();
-  loadAllUsers();
-  loadAnalytics();
-  loadAdmins();
+  setInterval(loadDashboard,15000);
 }
 
-// Check existing session
-(async () => {
-  try {
-    const data = await opFetch('/me');
-    if (data?.admin) showDashboard(data.admin);
-    else showLogin();
-  } catch { showLogin(); }
-})();
-
-// Login
-document.getElementById('op-login-btn').addEventListener('click', async () => {
-  const email = document.getElementById('op-email').value.trim();
-  const pass  = document.getElementById('op-password').value;
-  const errEl = document.getElementById('op-login-error');
-  errEl.style.display = 'none';
-  if (!email || !pass) { errEl.textContent='Fill in all fields.'; errEl.style.display='block'; return; }
-  try {
-    const data = await opFetch('/login', { method:'POST', body:JSON.stringify({ email, password:pass }) });
-    showDashboard(data.admin);
-  } catch (e) {
-    errEl.textContent = e.message || 'Invalid credentials.';
-    errEl.style.display = 'block';
-  }
+document.getElementById('op-login-btn').addEventListener('click',async()=>{
+  const email=document.getElementById('op-email').value.trim();
+  const password=document.getElementById('op-password').value;
+  clearErr();
+  try{
+    const r=await fetch(`${API}/login`,{method:'POST',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,password})});
+    const d=await r.json();
+    if(!r.ok)throw new Error(d.error);
+    _admin=d.admin;showDashboard();
+  }catch(e){showErr(e.message);}
 });
 
-document.getElementById('op-password').addEventListener('keydown', e => { if(e.key==='Enter') document.getElementById('op-login-btn').click(); });
-
-// Register link
-document.getElementById('op-register-link').addEventListener('click', async (e) => {
-  e.preventDefault();
-  const email = prompt('Admin email:');
-  if (!email) return;
-  const pass = prompt('Password (min 12 chars):');
-  if (!pass || pass.length < 12) { alert('Password too short.'); return; }
-  const name = prompt('Display name:');
-  try {
-    await opFetch('/register', { method:'POST', body:JSON.stringify({ email, password:pass, display_name:name||email }) });
-    toast('Admin account created. You can now sign in.', 'success');
-  } catch (e) { toast(e.message, 'error'); }
+document.getElementById('op-register-btn').addEventListener('click',async()=>{
+  const name=document.getElementById('op-reg-name').value.trim();
+  const email=document.getElementById('op-reg-email').value.trim();
+  const password=document.getElementById('op-reg-password').value;
+  const setup_key=document.getElementById('op-setup-key').value.trim();
+  clearErr();
+  try{
+    const r=await fetch(`${API}/register`,{method:'POST',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,password,display_name:name,setup_key})});
+    const d=await r.json();
+    if(!r.ok)throw new Error(d.error);
+    _admin=d.admin;showDashboard();
+  }catch(e){showErr(e.message);}
 });
 
-// Logout
-document.getElementById('op-logout-btn').addEventListener('click', async () => {
-  await opFetch('/logout', { method:'POST' }).catch(()=>{});
-  stopAutoRefresh();
-  showLogin();
-});
+document.getElementById('op-logout-btn').addEventListener('click',async()=>{await fetch(`${API}/logout`,{method:'POST',credentials:'include'});location.reload();});
+document.getElementById('op-show-register').addEventListener('click',e=>{e.preventDefault();document.getElementById('op-login-form').style.display='none';document.getElementById('op-register-form').style.display='block';});
+document.getElementById('op-show-login').addEventListener('click',e=>{e.preventDefault();document.getElementById('op-register-form').style.display='none';document.getElementById('op-login-form').style.display='block';});
+document.getElementById('op-refresh-btn').addEventListener('click',loadDashboard);
 
-// ── Nav Tabs ──────────────────────────────────────────────────────────
-
-document.querySelectorAll('.op-nav-item').forEach(item => {
-  item.addEventListener('click', () => {
-    document.querySelectorAll('.op-nav-item').forEach(i => i.classList.remove('active'));
-    document.querySelectorAll('.op-tab').forEach(t => t.classList.remove('active'));
-    item.classList.add('active');
-    const tab = item.dataset.tab;
-    document.getElementById(`tab-${tab}`)?.classList.add('active');
-    document.getElementById('op-topbar-title').textContent = item.textContent.trim().split('\n')[0].trim();
+document.querySelectorAll('.nav-item[data-panel]').forEach(el=>{
+  el.addEventListener('click',e=>{
+    e.preventDefault();
+    const p=el.dataset.panel;
+    document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+    el.classList.add('active');
+    document.querySelectorAll('.op-panel').forEach(pp=>pp.classList.remove('active'));
+    document.getElementById(`panel-${p}`).classList.add('active');
+    document.getElementById('op-panel-title').textContent=el.textContent.trim();
+    if(p==='reply')loadConversations();
+    if(p==='users')loadUsers();
+    if(p==='analytics')loadAnalytics();
+    if(p==='expiry')loadExpiry();
+    if(p==='settings')loadSettings();
   });
 });
 
-// ── Dashboard ────────────────────────────────────────────────────────
-
-async function loadDashboard() {
-  try {
-    const data = await opFetch('/dashboard');
-    document.getElementById('stat-active').textContent   = data.active_users ?? 0;
-    document.getElementById('stat-pending').textContent  = data.pending_replies ?? 0;
-    document.getElementById('stat-chats').textContent    = data.total_chats ?? 0;
-    document.getElementById('stat-messages').textContent = data.total_messages ?? 0;
-    document.getElementById('nav-active-badge').textContent = data.active_users ?? 0;
-    if ((data.pending_replies ?? 0) > 0) {
-      document.getElementById('nav-pending-badge').style.display = '';
-      document.getElementById('nav-pending-badge').textContent = data.pending_replies;
-    } else {
-      document.getElementById('nav-pending-badge').style.display = 'none';
-    }
-    renderLiveUsers(data.live_users ?? []);
-    renderPendingResponses(data.pending_list ?? []);
-  } catch (e) { console.error('dashboard', e); }
+async function loadDashboard(){
+  try{
+    const r=await fetch(`${API}/dashboard`,{credentials:'include'});
+    const d=await r.json();const s=d.stats;
+    document.getElementById('stat-active').textContent=s.active_users;
+    document.getElementById('stat-pending').textContent=s.pending_msgs;
+    document.getElementById('stat-convs').textContent=s.total_convs;
+    document.getElementById('stat-reactions').textContent=(s.reactions_24h.up||0)+(s.reactions_24h.down||0);
+    document.getElementById('stat-reactions-sub').textContent=`${s.reactions_24h.up||0} up · ${s.reactions_24h.down||0} down`;
+    const b=document.getElementById('queue-badge');
+    if(s.pending_msgs>0){b.textContent=s.pending_msgs;b.style.display='inline';}else b.style.display='none';
+    document.getElementById('live-users-tbody').innerHTML=d.live_users.length===0
+      ?'<tr><td colspan="6" style="color:var(--text-muted);text-align:center">No active users</td></tr>'
+      :d.live_users.map(u=>`<tr><td><span class="presence-dot ${u.state}"></span>${u.state}</td><td>${_e(u.display_name||u.email)}</td><td>${_e(u.conv_title||'—')}</td><td>${u.is_typing?'<span class="badge badge-warning">Typing</span>':'—'}</td><td>${_rt(u.last_seen)}</td><td><button class="btn btn-secondary btn-sm" onclick="openConvReply('${u.conversation_id}')">View</button></td></tr>`).join('');
+    document.getElementById('queue-tbody').innerHTML=d.queue.length===0
+      ?'<tr><td colspan="5" style="color:var(--text-muted);text-align:center">No pending replies</td></tr>'
+      :d.queue.map(q=>`<tr><td>${_e(q.user_name||q.user_email)}</td><td>${_e(q.conv_title)}</td><td>${_rt(q.created_at)}</td><td>${q.assigned_admin_id?'<span class="badge badge-accent">Assigned</span>':'<span class="badge badge-muted">Free</span>'}</td><td><button class="btn btn-primary btn-sm" onclick="openConvReply('${q.conversation_id}')">Reply</button></td></tr>`).join('');
+  }catch(e){console.error(e);}
 }
 
-function renderLiveUsers(users) {
-  const tbody = document.getElementById('live-users-body');
-  if (!users.length) {
-    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--text-muted);padding:var(--space-6);">No active users</td></tr>';
-    return;
-  }
-  tbody.innerHTML = users.map(u => `
-    <tr data-user-id="${esc(u.user_id)}" data-conv-id="${esc(u.conversation_id||'')}">
-      <td><strong>${esc(u.display_name||u.email)}</strong></td>
-      <td>
-        <span class="presence-dot ${u.state==='active'?'online':u.state==='away'?'away':'offline'}"></span>
-        ${esc(u.state||'offline')}
-        ${u.is_typing ? '<span class="typing-user-badge" style="margin-left:6px;"><span style="display:inline-flex;gap:3px;"><span style="width:4px;height:4px;border-radius:50%;background:currentColor;animation:typingDot 1.4s ease infinite;"></span><span style="width:4px;height:4px;border-radius:50%;background:currentColor;animation:typingDot 1.4s ease 0.2s infinite;"></span></span> typing</span>' : ''}
-      </td>
-      <td style="font-size:var(--text-xs);color:var(--text-muted);">${esc(u.conversation_title||'—')}</td>
-      <td style="font-size:var(--text-xs);color:var(--text-muted);">${u.session_start ? relTime(u.session_start) : '—'}</td>
-      <td style="font-size:var(--text-xs);color:var(--text-muted);">${esc(u.browser||'Unknown')}</td>
-      <td style="font-size:var(--text-xs);">${esc(u.assigned_admin||'Unassigned')}</td>
-      <td>
-        ${u.conversation_id ? `<button class="btn btn-secondary btn-sm" onclick="openConvFromDash('${esc(u.conversation_id)}')">Open</button>` : ''}
-      </td>
-    </tr>
-  `).join('');
+async function loadConversations(){
+  const r=await fetch(`${API}/conversations`,{credentials:'include'});
+  const d=await r.json();
+  document.getElementById('op-conv-list').innerHTML=(d.conversations??[]).map(c=>`
+    <div class="conv-list-item${c.id===_activeConvId?' active':''}" data-id="${c.id}" onclick="selectConv('${c.id}')">
+      <div class="conv-list-title">${_e(c.title)}${c.pending_count>0?`<span class="pending-badge">${c.pending_count}</span>`:''}</div>
+      <div class="conv-list-meta">${_e(c.user_name||c.user_email)} · ${_rt(c.updated_at)}</div>
+    </div>`).join('');
 }
 
-window.openConvFromDash = (convId) => {
-  document.querySelector('[data-tab="conversations"]').click();
-  setTimeout(() => openConversation(convId), 100);
+window.selectConv=async function(id){
+  _activeConvId=id;_citations=[];
+  document.querySelectorAll('.conv-list-item').forEach(el=>el.classList.toggle('active',el.dataset.id===id));
+  await loadConvMessages(id);await loadNotes(id);
+  document.getElementById('send-reply-btn').disabled=false;
 };
 
-function renderPendingResponses(list) {
-  const el = document.getElementById('pending-responses-list');
-  if (!list.length) {
-    el.innerHTML = '<p style="color:var(--text-muted);font-size:var(--text-sm);">No pending responses</p>';
-    return;
-  }
-  el.innerHTML = list.map(p => `
-    <div style="background:var(--surface);border:1px solid var(--warning);border-radius:var(--radius-lg);padding:var(--space-3) var(--space-4);display:flex;align-items:center;gap:var(--space-3);">
-      <div style="flex:1;">
-        <div style="font-size:var(--text-sm);font-weight:var(--weight-medium);">${esc(p.user_name)}</div>
-        <div style="font-size:var(--text-xs);color:var(--text-muted);margin-top:2px;">${esc(p.last_message?.slice(0,80))}...</div>
-      </div>
-      <div style="font-size:var(--text-xs);color:var(--text-muted);">${relTime(p.created_at)}</div>
-      <button class="btn btn-primary btn-sm" onclick="openConvFromDash('${esc(p.conversation_id)}')">Respond</button>
-    </div>
-  `).join('');
-}
-
-// ── Conversations ────────────────────────────────────────────────────
-
-async function loadAllConversations(query='') {
-  try {
-    const url = query ? `/conversations?q=${encodeURIComponent(query)}` : '/conversations';
-    const data = await opFetch(url);
-    renderConvList(data.conversations ?? []);
-  } catch(e) { console.error('convs', e); }
-}
-
-function renderConvList(convs) {
-  const el = document.getElementById('op-conv-list');
-  if (!convs.length) { el.innerHTML = '<p style="color:var(--text-muted);font-size:var(--text-sm);">No conversations</p>'; return; }
-  el.innerHTML = '';
-  for (const c of convs) {
-    const item = document.createElement('div');
-    item.className = 'op-conv-item' + (c.id === _currentConvId ? ' active' : '');
-    item.dataset.convId = c.id;
-    item.innerHTML = `
-      <div class="op-conv-user">${esc(c.user_name||'Unknown')}</div>
-      <div class="op-conv-title">${esc(c.title||'Untitled')}</div>
-      <div class="op-conv-meta">
-        ${c.has_pending ? '<span class="badge badge-warning" style="font-size:9px;">Pending</span>' : ''}
-        ${c.assigned_admin ? `<span class="badge badge-muted" style="font-size:9px;">${esc(c.assigned_admin)}</span>` : ''}
-        <span class="op-conv-time">${relTime(c.updated_at||c.created_at)}</span>
-      </div>
-    `;
-    item.addEventListener('click', () => openConversation(c.id));
-    el.appendChild(item);
-  }
-}
-
-async function openConversation(convId) {
-  _currentConvId = convId;
-  document.querySelectorAll('.op-conv-item').forEach(i => i.classList.toggle('active', i.dataset.convId === convId));
-  const view = document.getElementById('op-conv-view');
-  view.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--text-muted);font-size:var(--text-sm);">Loading...</div>';
-  try {
-    const data = await opFetch(`/conversations/${convId}`);
-    renderConvView(data);
-    loadNotes(convId);
-  } catch(e) { view.innerHTML = `<div style="padding:24px;color:var(--error);">${esc(e.message)}</div>`; }
-}
-
-function renderConvView(data) {
-  const { conversation: conv, messages, user } = data;
-  const view = document.getElementById('op-conv-view');
-
-  view.innerHTML = `
-    <div class="op-conv-header">
-      <div class="op-conv-header-info">
-        <div class="op-conv-header-user">${esc(user?.display_name||user?.email||'Unknown')}</div>
-        <div class="op-conv-header-sub">${esc(conv.title||'Untitled')} &middot; ${messages.length} messages</div>
-      </div>
-      <div style="display:flex;gap:var(--space-2);">
-        <button class="btn btn-secondary btn-sm" id="op-assign-btn">
-          ${conv.assigned_admin_id ? 'Assigned' : 'Claim'}
-        </button>
-        <button class="btn btn-secondary btn-sm" id="op-preserve-btn" title="Prevent expiration">Preserve</button>
-      </div>
-    </div>
-    <div class="op-messages" id="op-msg-list"></div>
-    <div class="op-composer">
-      <div class="op-composer-tabs">
-        <div class="op-composer-tab active" data-view="write">Write</div>
-        <div class="op-composer-tab" data-view="preview">Preview</div>
-      </div>
-      <div class="op-composer-toolbar">
-        <button class="op-tool-btn" data-fmt="**" title="Bold"><strong>B</strong></button>
-        <button class="op-tool-btn" data-fmt="_" title="Italic"><em>I</em></button>
-        <button class="op-tool-btn" data-fmt="`" title="Inline code" style="font-family:var(--font-mono);">&lt;/&gt;</button>
-        <div class="op-tool-sep"></div>
-        <button class="op-tool-btn" data-block="```\n" title="Code block" style="font-family:var(--font-mono);font-size:10px;">```</button>
-        <button class="op-tool-btn" data-block="- " title="List">&#8226;</button>
-        <button class="op-tool-btn" data-block="> " title="Quote">&ldquo;</button>
-        <div class="op-tool-sep"></div>
-        <button class="op-tool-btn" id="op-insert-cite-btn" title="Citation">[1]</button>
-      </div>
-      <div class="op-composer-area">
-        <textarea id="op-reply-input" placeholder="Type your response (markdown supported)..."></textarea>
-        <div class="op-preview" id="op-reply-preview"></div>
-      </div>
-      <div class="op-composer-actions">
-        <div class="op-composer-left">
-          <label class="op-stream-toggle">
-            <span class="toggle" style="transform:scale(0.85);">
-              <input type="checkbox" id="op-stream-toggle" checked />
-              <span class="toggle-track"></span>
-            </span>
-            Stream response
-          </label>
-          <select id="op-stream-speed" title="Typing speed">
-            <option value="15">Fast</option>
-            <option value="30" selected>Normal</option>
-            <option value="60">Slow</option>
-          </select>
-        </div>
-        <button class="btn btn-secondary btn-sm" id="op-thinking-btn">Thinking...</button>
-        <button class="btn btn-primary" id="op-send-reply-btn">Send Reply</button>
-      </div>
-    </div>
-  `;
-
-  // Render messages
-  const msgList = document.getElementById('op-msg-list');
-  for (const msg of messages) {
-    const el = document.createElement('div');
-    el.className = `op-msg ${msg.role}${msg.status==='pending'?' pending':''}`;
-    el.dataset.msgId = msg.id;
-    el.innerHTML = `
-      <div>${msg.role==='assistant' && window.marked ? window.marked.parse(msg.content||'') : esc(msg.content||'')}</div>
-      <div class="op-msg-meta">${msg.role} &middot; ${relTime(msg.created_at)}${msg.status==='pending'?' &middot; <em>awaiting response</em>':''}</div>
-    `;
-    msgList.appendChild(el);
-  }
-  msgList.scrollTop = msgList.scrollHeight;
-
-  // Highlight menu on text selection
-  msgList.addEventListener('mouseup', showHighlightMenu);
-
-  // Composer tabs
-  view.querySelectorAll('.op-composer-tab').forEach(tab => {
-    tab.addEventListener('click', () => {
-      view.querySelectorAll('.op-composer-tab').forEach(t => t.classList.remove('active'));
-      tab.classList.add('active');
-      const isPreview = tab.dataset.view === 'preview';
-      document.getElementById('op-reply-input').style.display = isPreview ? 'none' : '';
-      const prev = document.getElementById('op-reply-preview');
-      if (isPreview) {
-        prev.classList.add('visible');
-        const md = document.getElementById('op-reply-input').value;
-        prev.innerHTML = window.marked ? window.marked.parse(md) : esc(md);
-      } else {
-        prev.classList.remove('visible');
-      }
-    });
-  });
-
-  // Toolbar formatting
-  view.querySelectorAll('.op-tool-btn[data-fmt]').forEach(btn => {
-    btn.addEventListener('click', () => insertFmt(btn.dataset.fmt));
-  });
-  view.querySelectorAll('.op-tool-btn[data-block]').forEach(btn => {
-    btn.addEventListener('click', () => insertBlock(btn.dataset.block));
-  });
-
-  // Citation insert
-  document.getElementById('op-insert-cite-btn').addEventListener('click', () => {
-    const url = prompt('Source URL:');
-    const title = prompt('Source title:');
-    if (url) {
-      const ta = document.getElementById('op-reply-input');
-      const cite = `[${title||url}](${url})`;
-      insertAtCursor(ta, cite);
-    }
-  });
-
-  // Thinking indicator
-  document.getElementById('op-thinking-btn').addEventListener('click', async () => {
-    try {
-      await opFetch(`/conversations/${conv.id}/thinking`, { method:'POST' });
-      toast('Thinking indicator sent.', 'success');
-    } catch(e) { toast(e.message, 'error'); }
-  });
-
-  // Assign
-  document.getElementById('op-assign-btn').addEventListener('click', async () => {
-    try {
-      await opFetch(`/conversations/${conv.id}/assign`, { method:'POST' });
-      toast('Conversation claimed.', 'success');
-      document.getElementById('op-assign-btn').textContent = 'Assigned to you';
-    } catch(e) { toast(e.message, 'error'); }
-  });
-
-  // Preserve
-  document.getElementById('op-preserve-btn').addEventListener('click', async () => {
-    try {
-      await opFetch(`/conversations/${conv.id}/preserve`, { method:'POST' });
-      toast('Chat preserved from expiration.', 'success');
-    } catch(e) { toast(e.message, 'error'); }
-  });
-
-  // Send reply
-  document.getElementById('op-send-reply-btn').addEventListener('click', sendReply);
-}
-
-async function sendReply() {
-  const content = document.getElementById('op-reply-input').value.trim();
-  if (!content || !_currentConvId) return;
-  const shouldStream = document.getElementById('op-stream-toggle').checked;
-  const speed = parseInt(document.getElementById('op-stream-speed').value);
-  const btn = document.getElementById('op-send-reply-btn');
-  btn.disabled = true; btn.textContent = 'Sending...';
-  try {
-    if (shouldStream) {
-      await streamReply(_currentConvId, content, speed);
-    } else {
-      await opFetch(`/conversations/${_currentConvId}/reply`, {
-        method: 'POST',
-        body: JSON.stringify({ content }),
-      });
-    }
-    document.getElementById('op-reply-input').value = '';
-    toast('Reply sent.', 'success');
-    await openConversation(_currentConvId);
-  } catch(e) {
-    toast(e.message || 'Failed to send reply.', 'error');
-  } finally {
-    btn.disabled = false; btn.textContent = 'Send Reply';
-  }
-}
-
-async function streamReply(convId, content, msPerChar) {
-  const res = await fetch(`${API}/conversations/${convId}/stream-reply`, {
-    method: 'POST',
-    credentials: 'include',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ content, ms_per_char: msPerChar }),
-  });
-  if (!res.ok) {
-    const b = await res.json().catch(()=>({}));
-    throw new Error(b.error || 'Stream failed');
-  }
-}
-
-// ── Formatting helpers ────────────────────────────────────────────────
-
-function insertFmt(wrap) {
-  const ta = document.getElementById('op-reply-input');
-  const { selectionStart: s, selectionEnd: e, value: v } = ta;
-  const selected = v.slice(s, e);
-  const replacement = selected ? `${wrap}${selected}${wrap}` : `${wrap}text${wrap}`;
-  ta.value = v.slice(0, s) + replacement + v.slice(e);
-  ta.focus();
-  ta.selectionStart = s + wrap.length;
-  ta.selectionEnd   = s + wrap.length + (selected||'text').length;
-}
-
-function insertBlock(prefix) {
-  const ta = document.getElementById('op-reply-input');
-  const { selectionStart: s, value: v } = ta;
-  const lineStart = v.lastIndexOf('\n', s - 1) + 1;
-  const isFence = prefix.startsWith('```');
-  const insertion = isFence ? '```\ncode here\n```' : prefix;
-  ta.value = v.slice(0, lineStart) + insertion + v.slice(lineStart);
-  ta.focus();
-}
-
-function insertAtCursor(ta, text) {
-  const s = ta.selectionStart;
-  ta.value = ta.value.slice(0, s) + text + ta.value.slice(ta.selectionEnd);
-  ta.selectionStart = ta.selectionEnd = s + text.length;
-  ta.focus();
-}
-
-// ── Highlight menu ────────────────────────────────────────────────────
-
-let _highlightMenu = null;
-
-function showHighlightMenu() {
-  const sel = window.getSelection();
-  if (!sel || sel.isCollapsed || !sel.toString().trim()) {
-    removeHighlightMenu(); return;
-  }
-  removeHighlightMenu();
-  const text = sel.toString().trim();
-  const range = sel.getRangeAt(0);
-  const rect = range.getBoundingClientRect();
-  _highlightMenu = document.createElement('div');
-  _highlightMenu.className = 'highlight-menu';
-  const actions = [
-    { label: 'Quote', fn: () => { insertAtCursor(document.getElementById('op-reply-input'), `> ${text}\n\n`); removeHighlightMenu(); }},
-    { label: 'Add Note', fn: () => { document.getElementById('op-note-input').value = text; removeHighlightMenu(); }},
-    { label: 'Copy', fn: () => { navigator.clipboard.writeText(text); removeHighlightMenu(); }},
-    { label: 'Summarize', fn: () => { insertAtCursor(document.getElementById('op-reply-input'), `[Summary of: "${text.slice(0,40)}..."]\n`); removeHighlightMenu(); }},
-  ];
-  for (const a of actions) {
-    const btn = document.createElement('button');
-    btn.className = 'highlight-menu-btn';
-    btn.textContent = a.label;
-    btn.addEventListener('mousedown', (e) => { e.preventDefault(); a.fn(); });
-    _highlightMenu.appendChild(btn);
-  }
-  document.body.appendChild(_highlightMenu);
-  _highlightMenu.style.top  = `${rect.top + window.scrollY - _highlightMenu.offsetHeight - 6}px`;
-  _highlightMenu.style.left = `${rect.left + (rect.width/2) - (_highlightMenu.offsetWidth/2)}px`;
-  setTimeout(() => document.addEventListener('mousedown', removeHighlightMenu, { once:true }), 0);
-}
-
-function removeHighlightMenu() {
-  _highlightMenu?.remove();
-  _highlightMenu = null;
-}
-
-// ── Notes ─────────────────────────────────────────────────────────────
-
-async function loadNotes(convId) {
-  try {
-    const data = await opFetch(`/conversations/${convId}/notes`);
-    const list = document.getElementById('op-notes-list');
-    const notes = data.notes ?? [];
-    if (!notes.length) { list.innerHTML = '<p style="color:var(--text-muted);font-size:var(--text-xs);padding:var(--space-2);">No notes yet.</p>'; return; }
-    list.innerHTML = '';
-    for (const n of notes) {
-      const item = document.createElement('div');
-      item.className = 'op-note-item';
-      item.innerHTML = `<span>${esc(n.content)}</span><button class="op-note-del" aria-label="Delete note">&times;</button>`;
-      item.querySelector('.op-note-del').addEventListener('click', async () => {
-        await opFetch(`/notes/${n.id}`, { method:'DELETE' }).catch(()=>{});
-        item.remove();
-      });
-      list.appendChild(item);
-    }
-  } catch {}
-}
-
-document.getElementById('op-note-save-btn').addEventListener('click', async () => {
-  if (!_currentConvId) return;
-  const content = document.getElementById('op-note-input').value.trim();
-  if (!content) return;
-  try {
-    await opFetch(`/conversations/${_currentConvId}/notes`, { method:'POST', body:JSON.stringify({ content }) });
-    document.getElementById('op-note-input').value = '';
-    await loadNotes(_currentConvId);
-    toast('Note saved.', 'success');
-  } catch(e) { toast(e.message, 'error'); }
-});
-
-// Conv search
-document.getElementById('conv-search').addEventListener('input', (e) => {
-  clearTimeout(window._searchTimer);
-  window._searchTimer = setTimeout(() => loadAllConversations(e.target.value), 300);
-});
-
-// ── Users Tab ─────────────────────────────────────────────────────────
-
-async function loadAllUsers() {
-  try {
-    const data = await opFetch('/users');
-    const tbody = document.getElementById('all-users-body');
-    const users = data.users ?? [];
-    if (!users.length) { tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--text-muted);padding:24px;">No users</td></tr>'; return; }
-    tbody.innerHTML = users.map(u => `
-      <tr>
-        <td><strong>${esc(u.display_name||'—')}</strong></td>
-        <td style="color:var(--text-muted);">${esc(u.email)}</td>
-        <td style="font-size:var(--text-xs);color:var(--text-muted);">${new Date(u.created_at).toLocaleDateString()}</td>
-        <td style="text-align:center;">${u.conversation_count??0}</td>
-        <td style="font-size:var(--text-xs);color:var(--text-muted);">${u.last_active ? relTime(u.last_active) : '—'}</td>
-        <td><span class="presence-dot ${u.is_online?'online':'offline'}"></span>${u.is_online?'Online':'Offline'}</td>
-      </tr>
-    `).join('');
-  } catch(e) { console.error('users', e); }
-}
-
-// ── Analytics Tab ─────────────────────────────────────────────────────
-
-async function loadAnalytics() {
-  try {
-    const data = await opFetch('/analytics');
-    const up = data.reactions?.up ?? 0;
-    const down = data.reactions?.down ?? 0;
-    const total = up + down || 1;
-    document.getElementById('val-up').textContent   = up;
-    document.getElementById('val-down').textContent = down;
-    document.getElementById('bar-up').style.width   = `${Math.round((up/total)*100)}%`;
-    document.getElementById('bar-down').style.width = `${Math.round((down/total)*100)}%`;
-
-    // Browsers
-    const browsers = data.browsers ?? {};
-    const browserEl = document.getElementById('browser-bars');
-    const bTotal = Object.values(browsers).reduce((a,b)=>a+b,0) || 1;
-    browserEl.innerHTML = Object.entries(browsers).map(([name, cnt]) => `
-      <div class="analytics-bar-row">
-        <span class="analytics-bar-label">${esc(name)}</span>
-        <div class="analytics-bar-track"><div class="analytics-bar-fill" style="width:${Math.round((cnt/bTotal)*100)}%;"></div></div>
-        <span class="analytics-bar-val">${cnt}</span>
-      </div>
-    `).join('') || '<p style="color:var(--text-muted);font-size:var(--text-sm);">No data</p>';
-
-    // Response times
-    const rt = data.response_times ?? {};
-    document.getElementById('response-time-stats').innerHTML = `
-      <div style="display:flex;flex-direction:column;gap:var(--space-2);">
-        <div style="display:flex;justify-content:space-between;font-size:var(--text-xs);"><span style="color:var(--text-muted);">Average</span><strong>${rt.avg_seconds ?? '—'}s</strong></div>
-        <div style="display:flex;justify-content:space-between;font-size:var(--text-xs);"><span style="color:var(--text-muted);">Fastest</span><strong>${rt.min_seconds ?? '—'}s</strong></div>
-        <div style="display:flex;justify-content:space-between;font-size:var(--text-xs);"><span style="color:var(--text-muted);">Slowest</span><strong>${rt.max_seconds ?? '—'}s</strong></div>
-      </div>
-    `;
-
-    // Expiring chats
-    const expiring = data.expiring_chats ?? [];
-    document.getElementById('expiring-chats-list').innerHTML = expiring.length
-      ? expiring.map(c => `<div style="display:flex;justify-content:space-between;font-size:var(--text-xs);margin-bottom:6px;"><span style="color:var(--text-muted);">${esc(c.title||'Untitled')}</span><span style="color:var(--warning);">in ${c.expires_in}</span></div>`).join('')
-      : '<p style="color:var(--text-muted);">No chats expiring soon</p>';
-
-  } catch(e) { console.error('analytics', e); }
-}
-
-// ── Admins Tab ────────────────────────────────────────────────────────
-
-async function loadAdmins() {
-  try {
-    const data = await opFetch('/admins');
-    const tbody = document.getElementById('admins-body');
-    const admins = data.admins ?? [];
-    tbody.innerHTML = admins.map(a => `
-      <tr>
-        <td><strong>${esc(a.display_name||'—')}</strong></td>
-        <td style="color:var(--text-muted);">${esc(a.email)}</td>
-        <td style="font-size:var(--text-xs);color:var(--text-muted);">${new Date(a.created_at).toLocaleDateString()}</td>
-        <td style="font-size:var(--text-xs);color:var(--text-muted);">${a.last_login ? relTime(a.last_login) : 'Never'}</td>
-        <td><button class="btn btn-danger btn-sm" onclick="deleteAdmin('${esc(a.id)}')">Remove</button></td>
-      </tr>
-    `).join('') || '<tr><td colspan="5" style="text-align:center;color:var(--text-muted);padding:24px;">No admins</td></tr>';
-  } catch {}
-}
-
-window.deleteAdmin = async (id) => {
-  if (!confirm('Remove this admin?')) return;
-  try {
-    await opFetch(`/admins/${id}`, { method:'DELETE' });
-    toast('Admin removed.', 'success');
-    loadAdmins();
-  } catch(e) { toast(e.message, 'error'); }
+window.openConvReply=async function(id){
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.querySelector('[data-panel="reply"]').classList.add('active');
+  document.querySelectorAll('.op-panel').forEach(p=>p.classList.remove('active'));
+  document.getElementById('panel-reply').classList.add('active');
+  document.getElementById('op-panel-title').textContent='Reply Queue';
+  await loadConversations();await selectConv(id);
 };
 
-document.getElementById('create-admin-btn').addEventListener('click', async () => {
-  const email = prompt('Admin email:');
-  if (!email) return;
-  const pass = prompt('Password (min 12 chars):');
-  if (!pass || pass.length < 12) { alert('Password too short.'); return; }
-  const name = prompt('Display name:');
-  try {
-    await opFetch('/register', { method:'POST', body:JSON.stringify({ email, password:pass, display_name:name||email }) });
-    toast('Admin created.', 'success');
-    loadAdmins();
-  } catch(e) { toast(e.message, 'error'); }
-});
-
-// ── Auto Refresh ──────────────────────────────────────────────────────
-
-function startAutoRefresh() {
-  _refreshTimer = setInterval(() => {
-    loadDashboard();
-  }, 8000);
+async function loadConvMessages(id){
+  const r=await fetch(`${API}/conversations/${id}/messages`,{credentials:'include'});
+  const d=await r.json();
+  const scroll=document.getElementById('msg-view-scroll');
+  const msgs=d.messages??[];
+  scroll.innerHTML=msgs.map(m=>{
+    const cls=m.status==='pending'?'op-msg-pending':m.role==='user'?'op-msg-user':'op-msg-assistant';
+    const content=m.role==='assistant'&&window.marked?window.marked.parse(m.content||'(pending…)'):_e(m.content||'(pending…)');
+    const reacts=(m.reactions||[]).map(r=>`<span class="badge badge-${r.type==='up'?'success':'error'}">${r.type==='up'?'+1':'-1'} ${_e(r.email)}</span>`).join(' ');
+    return`<div class="op-msg ${cls}">${content}<div class="op-msg-meta"><span>${m.role==='user'?'User':'Assistant'}</span><span>${_rt(m.created_at)}</span>${m.status==='pending'?'<span class="badge badge-warning">Awaiting reply</span>':''}${reacts}${m.role==='assistant'&&m.status==='done'?`<button class="btn btn-ghost btn-sm" style="font-size:10px;padding:1px 6px" onclick="editMsg('${m.id}')">Edit</button>`:''}</div></div>`;
+  }).join('');
+  scroll.scrollTop=scroll.scrollHeight;
+  document.getElementById('msg-view-title').textContent=id;
 }
 
-function stopAutoRefresh() {
-  clearInterval(_refreshTimer);
+document.getElementById('send-reply-btn').addEventListener('click',async()=>{
+  if(!_activeConvId)return;
+  const content=document.getElementById('composer-textarea').value.trim();
+  if(!content)return;
+  const btn=document.getElementById('send-reply-btn');
+  btn.disabled=true;btn.textContent='Sending...';
+  try{
+    const r=await fetch(`${API}/conversations/${_activeConvId}/reply`,{method:'POST',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify({content,citations:_citations})});
+    if(!r.ok){const d=await r.json();throw new Error(d.error);}
+    document.getElementById('composer-textarea').value='';
+    _citations=[];renderCitationRows();
+    await loadConvMessages(_activeConvId);await loadDashboard();
+  }catch(e){alert('Error: '+e.message);}
+  finally{btn.disabled=false;btn.textContent='Send reply';}
+});
+
+document.querySelectorAll('.composer-tab').forEach(tab=>{
+  tab.addEventListener('click',()=>{
+    document.querySelectorAll('.composer-tab').forEach(t=>t.classList.remove('active'));
+    tab.classList.add('active');
+    const t=tab.dataset.tab;_streamMode=t==='stream';
+    document.getElementById('composer-textarea').style.display=t==='preview'?'none':'block';
+    document.getElementById('composer-preview').classList.toggle('visible',t==='preview');
+    document.getElementById('stream-chunk-btn').style.display=_streamMode?'inline-flex':'none';
+    document.getElementById('stream-finish-btn').style.display=_streamMode?'inline-flex':'none';
+    document.getElementById('send-reply-btn').style.display=_streamMode?'none':'inline-flex';
+    if(t==='preview'){const md=document.getElementById('composer-textarea').value;document.getElementById('composer-preview').innerHTML=window.marked?window.marked.parse(md):md;}
+  });
+});
+
+document.getElementById('composer-textarea').addEventListener('input',()=>{
+  if(document.getElementById('composer-preview').classList.contains('visible')){
+    const md=document.getElementById('composer-textarea').value;
+    document.getElementById('composer-preview').innerHTML=window.marked?window.marked.parse(md):md;
+  }
+});
+
+document.getElementById('stream-chunk-btn').addEventListener('click',async()=>{
+  if(!_activeConvId)return;
+  const chunk=document.getElementById('composer-textarea').value;if(!chunk)return;
+  await fetch(`${API}/conversations/${_activeConvId}/chunk`,{method:'POST',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify({chunk})});
+  document.getElementById('stream-indicator').classList.add('active');
+  document.getElementById('composer-textarea').value='';
+});
+
+document.getElementById('stream-finish-btn').addEventListener('click',async()=>{
+  if(!_activeConvId)return;
+  const content=document.getElementById('composer-textarea').value;
+  await fetch(`${API}/conversations/${_activeConvId}/finish`,{method:'POST',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify({content,citations:_citations})});
+  document.getElementById('stream-indicator').classList.remove('active');
+  document.getElementById('composer-textarea').value='';_citations=[];renderCitationRows();
+  await loadConvMessages(_activeConvId);
+});
+
+document.querySelectorAll('.toolbar-btn[data-md]').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    const ta=document.getElementById('composer-textarea');const md=btn.dataset.md;
+    const sel=ta.value.substring(ta.selectionStart,ta.selectionEnd);
+    const ins=sel?`${md}${sel}${md}`:md;const s=ta.selectionStart;
+    ta.value=ta.value.substring(0,s)+ins+ta.value.substring(ta.selectionEnd);
+    ta.selectionStart=ta.selectionEnd=s+ins.length;ta.focus();
+  });
+});
+
+document.getElementById('toggle-citations').addEventListener('click',()=>{
+  const e=document.getElementById('citations-editor');
+  e.style.display=e.style.display==='flex'?'none':'flex';
+});
+
+document.getElementById('add-citation-row').addEventListener('click',()=>{
+  _citations.push({url:'',title:'',domain:'',excerpt:''});renderCitationRows();
+});
+
+function renderCitationRows(){
+  document.getElementById('citation-rows').innerHTML=_citations.map((c,i)=>`
+    <div class="citation-row">
+      <input class="form-input" placeholder="URL" value="${_e(c.url)}" oninput="_citations[${i}].url=this.value" style="font-size:var(--text-xs);padding:var(--space-1) var(--space-2)" />
+      <input class="form-input" placeholder="Title" value="${_e(c.title)}" oninput="_citations[${i}].title=this.value" style="font-size:var(--text-xs);padding:var(--space-1) var(--space-2)" />
+      <button class="btn btn-ghost btn-sm" onclick="_citations.splice(${i},1);renderCitationRows()">×</button>
+    </div>`).join('');
 }
 
-document.getElementById('op-refresh-btn').addEventListener('click', () => {
-  loadDashboard();
-  loadAllConversations();
-  loadAnalytics();
-  toast('Refreshed.', 'info');
+document.getElementById('assign-btn').addEventListener('click',async()=>{
+  if(!_activeConvId)return;
+  await fetch(`${API}/assign`,{method:'POST',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify({conversation_id:_activeConvId})});
+  document.getElementById('assign-btn').style.display='none';document.getElementById('unassign-btn').style.display='inline-flex';
 });
+
+document.getElementById('unassign-btn').addEventListener('click',async()=>{
+  if(!_activeConvId)return;
+  await fetch(`${API}/unassign`,{method:'POST',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify({conversation_id:_activeConvId})});
+  document.getElementById('assign-btn').style.display='inline-flex';document.getElementById('unassign-btn').style.display='none';
+});
+
+window.editMsg=async function(msgId){
+  const newContent=prompt('Edit assistant message:');
+  if(!newContent)return;
+  await fetch(`${API}/messages/${msgId}/edit`,{method:'PATCH',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify({content:newContent})});
+  await loadConvMessages(_activeConvId);
+};
+
+async function loadNotes(convId){
+  const r=await fetch(`${API}/notes/${convId}?type=conversation`,{credentials:'include'});
+  const d=await r.json();
+  document.getElementById('notes-list').innerHTML=(d.notes??[]).length===0
+    ?'<p style="font-size:var(--text-xs);color:var(--text-muted);padding:var(--space-3)">No notes yet.</p>'
+    :(d.notes??[]).map(n=>`<div class="note-card">${n.tag?`<div class="note-card-tag">${_e(n.tag)}</div>`:''}<div class="note-card-body">${_e(n.content)}</div><div class="note-card-meta">${_e(n.admin_name)} · ${_rt(n.created_at)}</div></div>`).join('');
+}
+
+document.getElementById('save-note-btn').addEventListener('click',async()=>{
+  const content=document.getElementById('note-textarea').value.trim();
+  const tag=document.getElementById('note-tag').value.trim();
+  if(!content||!_activeConvId)return;
+  await fetch(`${API}/notes`,{method:'POST',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify({target_type:'conversation',target_id:_activeConvId,content,tag})});
+  document.getElementById('note-textarea').value='';document.getElementById('note-tag').value='';
+  await loadNotes(_activeConvId);
+});
+
+async function loadUsers(){
+  const r=await fetch(`${API}/users`,{credentials:'include'});const d=await r.json();
+  document.getElementById('users-tbody').innerHTML=(d.users??[]).map(u=>`<tr><td>${_e(u.display_name)}</td><td>${_e(u.email)}</td><td><span class="presence-dot ${u.state||'offline'}"></span>${u.state||'offline'}</td><td>${u.last_seen?_rt(u.last_seen):'—'}</td><td>${_rt(u.created_at)}</td></tr>`).join('');
+}
+
+async function loadAnalytics(){
+  const r=await fetch(`${API}/analytics`,{credentials:'include'});const d=await r.json();
+  document.getElementById('an-sessions').textContent=d.sessions?.total??0;
+  const rx=d.reactions??[];
+  document.getElementById('an-up').textContent=rx.find(r=>r.type==='up')?.count??0;
+  document.getElementById('an-down').textContent=rx.find(r=>r.type==='down')?.count??0;
+  document.getElementById('analytics-tbody').innerHTML=(d.messages_per_day??[]).map(r=>`<tr><td>${r.date}</td><td>${r.count}</td></tr>`).join('');
+}
+
+async function loadExpiry(){
+  const r=await fetch(`${API}/expiring`,{credentials:'include'});const d=await r.json();
+  document.getElementById('expiry-tbody').innerHTML=(d.expiring??[]).map(c=>`<tr><td>${_e(c.email)}</td><td>${_e(c.title)}</td><td>${_rt(c.expires_at)}</td><td><button class="btn btn-secondary btn-sm" onclick="preserveChat('${c.id}')">Preserve</button></td></tr>`).join('');
+  document.getElementById('expired-tbody').innerHTML=(d.recently_expired??[]).map(c=>`<tr><td>${_e(c.email)}</td><td>${_e(c.title)}</td><td>${_rt(c.expires_at)}</td></tr>`).join('');
+}
+
+window.preserveChat=async function(id){
+  await fetch(`${API}/conversations/${id}/preserve`,{method:'POST',credentials:'include'});await loadExpiry();
+};
+
+async function loadSettings(){
+  const r=await fetch(`${API}/settings`,{credentials:'include'});const d=await r.json();const s=d.settings??{};
+  document.getElementById('set-expiry-days').value=s.chat_expiry_days??30;
+  document.getElementById('set-warn-days').value=s.expiry_warning_days??3;
+  document.getElementById('set-max-msg').value=s.max_message_length??32000;
+  document.getElementById('set-reg-enabled').checked=s.registration_enabled!=='false';
+}
+
+document.getElementById('save-settings-btn').addEventListener('click',async()=>{
+  const body={chat_expiry_days:document.getElementById('set-expiry-days').value,expiry_warning_days:document.getElementById('set-warn-days').value,max_message_length:document.getElementById('set-max-msg').value,registration_enabled:document.getElementById('set-reg-enabled').checked?'true':'false'};
+  await fetch(`${API}/settings`,{method:'PATCH',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+  alert('Settings saved.');
+});
+
+function showErr(m){const e=document.getElementById('op-error');e.textContent=m;e.classList.add('visible');}
+function clearErr(){document.getElementById('op-error').classList.remove('visible');}
+function _e(s){if(!s)return'';return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function _rt(s){if(!s)return'—';const d=Math.floor((Date.now()-new Date(s).getTime())/1000);if(d<60)return'just now';if(d<3600)return`${Math.floor(d/60)}m ago`;if(d<86400)return`${Math.floor(d/3600)}h ago`;return`${Math.floor(d/86400)}d ago`;}
+
+boot();
 </script>
 </body>
 </html>
