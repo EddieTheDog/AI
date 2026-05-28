@@ -1,0 +1,303 @@
+# SIA
+
+A production-ready conversational AI web platform built on Cloudflare Pages, Cloudflare Workers, and Cloudflare D1.
+
+---
+
+## Architecture Overview
+
+```
+sia/
+├── schema/
+│   └── d1.sql                  # Full D1 database schema
+├── src/
+│   ├── index.html              # Main chat UI (/)
+│   ├── css/
+│   │   ├── base.css            # Design tokens, reset
+│   │   ├── layout.css          # App shell, sidebar, input area
+│   │   ├── messages.css        # Message bubbles, markdown, code blocks
+│   │   └── components.css      # Buttons, modals, toasts, dropdowns
+│   ├── js/
+│   │   ├── api.js              # API client, streaming, all endpoints
+│   │   ├── auth.js             # Auth state management
+│   │   ├── chat.js             # Conversation state, send/receive
+│   │   ├── renderer.js         # Markdown, syntax highlighting, citations
+│   │   └── ui.js               # Toast, modal, scroll, auto-expand
+│   └── pages/
+│       ├── login.html          # User login/register (/login)
+│       └── op.html             # Admin operator dashboard (/op)
+└── worker/
+    ├── index.js                # Worker entry point and router
+    ├── lib/
+    │   └── response.js         # Helpers: json, err, cors, ID gen, hashing
+    ├── middleware/
+    │   ├── auth.js             # Session validation middleware
+    │   └── ratelimit.js        # IP rate limiting via KV
+    └── routes/
+        ├── auth.js             # /api/auth/*
+        ├── conversations.js    # /api/conversations/*
+        ├── messages.js         # /api/messages/*
+        ├── presence.js         # /api/presence/*
+        ├── memory.js           # /api/memory/*
+        ├── images.js           # /api/images/*
+        ├── sharing.js          # /api/shared/*
+        └── admin.js            # /api/admin/*
+```
+
+### How it works
+
+Users interact with a chat UI that looks and feels like a real AI assistant. When a user sends a message, the backend creates a `pending` assistant message in D1. The frontend polls for updates via SSE. Meanwhile, admins logged into `/op` see the message appear in their queue in real time, type a response using the rich composer (with markdown preview, streaming mode, and citation injection), and submit it — which updates the message status to `done` and delivers it to the user as a streamed response.
+
+---
+
+## Prerequisites
+
+- [Node.js](https://nodejs.org/) 18+
+- [Wrangler CLI](https://developers.cloudflare.com/workers/wrangler/) — `npm install -g wrangler`
+- A Cloudflare account with Pages and Workers enabled
+
+---
+
+## Setup
+
+### 1. Clone the repository
+
+```bash
+git clone https://github.com/your-username/sia.git
+cd sia
+```
+
+### 2. Authenticate Wrangler
+
+```bash
+wrangler login
+```
+
+### 3. Create the D1 database
+
+```bash
+wrangler d1 create sia-db
+```
+
+Copy the `database_id` from the output. You will need it for your `wrangler.toml` (if using one) or Cloudflare dashboard bindings.
+
+### 4. Run the database schema
+
+```bash
+wrangler d1 execute sia-db --file=schema/d1.sql
+```
+
+For local development:
+
+```bash
+wrangler d1 execute sia-db --local --file=schema/d1.sql
+```
+
+### 5. Configure environment variables
+
+In the Cloudflare dashboard under **Workers & Pages → your Worker → Settings → Variables**, add:
+
+| Variable | Description |
+|---|---|
+| `ADMIN_SETUP_KEY` | Secret key required to create additional admin accounts after the first |
+
+Optionally, if you add R2 for image storage:
+
+| Variable | Description |
+|---|---|
+| `R2_PUBLIC_URL` | Public base URL for your R2 bucket |
+
+If you do not configure R2, images are stored as base64 data URLs in D1 (fine for small images, not recommended for production scale).
+
+For rate limiting, bind a **KV namespace** named `RATE_LIMIT` in your Worker settings. If not bound, rate limiting is silently skipped.
+
+### 6. Deploy the Worker
+
+```bash
+wrangler deploy worker/index.js --name sia-worker --compatibility-date 2024-01-01
+```
+
+Bind your D1 database to the worker:
+
+- In the Cloudflare dashboard: Workers → sia-worker → Settings → D1 Database Bindings
+- Variable name: `DB`
+- Database: `sia-db`
+
+### 7. Deploy the frontend via Cloudflare Pages
+
+In the Cloudflare dashboard:
+
+1. Go to **Pages → Create a project → Connect to Git**
+2. Select your repository
+3. Build settings:
+   - Framework preset: **None**
+   - Build command: *(leave blank)*
+   - Build output directory: `src`
+4. Deploy
+
+Then connect your Worker to Pages as a proxy:
+
+- Pages → your project → Settings → Functions → KV namespace bindings / D1 bindings  
+- Or use a `_routes.json` to proxy `/api/*` to your Worker
+
+### 8. Configure routing
+
+Create a `_routes.json` in the `src/` directory to route API calls through the Worker:
+
+```json
+{
+  "version": 1,
+  "include": ["/api/*"],
+  "exclude": []
+}
+```
+
+And a `_redirects` file in `src/` for SPA routing:
+
+```
+/c/*     /index.html  200
+/new     /index.html  200
+/login   /pages/login.html  200
+/op      /pages/op.html  200
+/shared/* /pages/shared.html 200
+```
+
+---
+
+## Local Development
+
+```bash
+# Start the Worker locally (with local D1)
+wrangler dev worker/index.js --local
+
+# Serve the frontend (any static server)
+npx serve src -p 3000
+```
+
+The frontend at `http://localhost:3000` will need to proxy `/api/*` to `http://localhost:8787`. You can configure this in a local reverse proxy or update the `API_BASE` in `src/js/api.js` temporarily during development.
+
+---
+
+## Creating Your First Admin Account
+
+1. Navigate to `/op`
+2. Click **"First time? Create admin account"**
+3. Fill in name, email, and password (minimum 12 characters)
+4. Leave the setup key blank — the first admin account requires no key
+5. Sign in
+
+To create additional admin accounts, provide the `ADMIN_SETUP_KEY` environment variable value in the setup key field.
+
+---
+
+## User Registration
+
+By default, user registration is open. To disable it:
+
+1. Log into `/op`
+2. Go to **Settings**
+3. Toggle off **"Allow new user registrations"**
+4. Save
+
+---
+
+## Database Tables
+
+| Table | Purpose |
+|---|---|
+| `users` | User accounts |
+| `admins` | Admin accounts |
+| `sessions` | Auth sessions for users and admins |
+| `conversations` | Chat conversations |
+| `messages` | Individual messages with status tracking |
+| `image_meta` | Uploaded image metadata |
+| `reactions` | Thumbs up/down on messages |
+| `memories` | User-visible saved memories |
+| `internal_notes` | Admin-only notes on users/chats/messages |
+| `citations` | Source citations attached to messages |
+| `presence` | Real-time user presence and typing state |
+| `assignments` | Admin-to-conversation assignment tracking |
+| `typing_state` | Streaming buffer for incremental admin replies |
+| `share_tokens` | Secure tokens for shared conversation links |
+| `settings` | Platform configuration key/value pairs |
+| `analytics` | Event log for usage analytics |
+
+---
+
+## Security Notes
+
+- All passwords are hashed with PBKDF2 (100,000 iterations, SHA-256) using the Web Crypto API
+- Sessions use `HttpOnly; Secure; SameSite=Lax` cookies
+- CSRF tokens are validated on all state-changing requests
+- Admin sessions expire after 12 hours; user sessions after 30 days
+- The `/op` route is not publicly linked anywhere in the user UI
+- Rate limiting is applied to auth endpoints (10 login attempts per minute per IP)
+- All conversation access is validated against the authenticated user's ID — users cannot access other users' conversations
+- Shared conversation links use unguessable random tokens and support optional expiry
+
+---
+
+## Admin Dashboard — `/op`
+
+The operator dashboard provides:
+
+- **Dashboard** — Live user presence, pending reply queue, reaction stats
+- **Reply Queue** — Select any conversation, read full history, compose and send responses with markdown, stream responses chunk by chunk, inject citations, add internal notes
+- **Users** — All registered users with presence status
+- **Analytics** — Messages per day, session counts, reaction breakdown
+- **Expiring Chats** — Conversations nearing expiry with option to preserve
+- **Settings** — Configure expiry windows, message limits, registration toggle
+
+Admins can:
+- Claim/release conversations (assignment system)
+- Send replies instantly or stream them incrementally
+- Edit previously sent assistant messages
+- Add private notes to conversations (never visible to users)
+- Preserve conversations from auto-deletion
+
+---
+
+## Chat Expiry
+
+Conversations are automatically marked as expiring after a configurable number of inactive days (default: 30). A warning state is set 3 days before deletion. Sending a new message resets the expiry timer. Admins can preserve individual conversations permanently from the dashboard.
+
+---
+
+## Troubleshooting
+
+**Worker returns 500 on all requests**
+- Check that the `DB` D1 binding is correctly configured in your Worker settings
+- Run `wrangler d1 execute sia-db --file=schema/d1.sql` to ensure all tables exist
+
+**Login says "Invalid email or password" immediately**
+- Ensure you registered first at `/login` (user) or `/op` (admin)
+- Passwords are case-sensitive
+
+**Messages stay pending and never resolve**
+- An admin must be logged into `/op` and send a reply from the queue
+- Check the Reply Queue panel for the pending conversation
+
+**Images fail to upload**
+- Without R2 configured, images are stored as base64 in D1 — files over ~1MB may hit D1 row size limits
+- For production, bind an R2 bucket and set `R2_PUBLIC_URL`
+
+**Rate limit errors during development**
+- If `RATE_LIMIT` KV is not bound, rate limiting is skipped
+- If it is bound locally, use `wrangler dev --local` which uses a local KV store
+
+---
+
+## Development Workflow
+
+1. Edit Worker code in `worker/`
+2. Test with `wrangler dev --local`
+3. Edit frontend in `src/`
+4. Serve with any static file server
+5. Deploy Worker: `wrangler deploy`
+6. Deploy frontend: push to GitHub → Cloudflare Pages auto-deploys
+
+---
+
+## License
+
+Private. All rights reserved.
