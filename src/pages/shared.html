@@ -1,0 +1,182 @@
+<!-- src/pages/shared.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Shared Conversation — SIA</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js" defer></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/9.1.6/marked.min.js" defer></script>
+
+  <link rel="stylesheet" href="/src/css/base.css" />
+  <link rel="stylesheet" href="/src/css/messages.css" />
+  <link rel="stylesheet" href="/src/css/components.css" />
+
+  <style>
+    body { display:flex; flex-direction:column; min-height:100dvh; }
+
+    .shared-header {
+      display:flex; align-items:center; justify-content:space-between;
+      padding: var(--space-4) var(--space-6);
+      border-bottom: 1px solid var(--border-soft);
+      background: var(--bg-2);
+      flex-shrink: 0;
+    }
+
+    .shared-logo {
+      display:flex; align-items:center; gap: var(--space-2);
+      font-size: var(--text-lg); font-weight: var(--weight-semibold);
+      color: var(--text); text-decoration:none;
+    }
+
+    .shared-logo-mark {
+      width:28px; height:28px; background: var(--accent);
+      border-radius: var(--radius-md);
+      display:flex; align-items:center; justify-content:center;
+    }
+
+    .shared-badge {
+      font-size: var(--text-xs); color: var(--text-muted);
+      background: var(--surface-2); border: 1px solid var(--border);
+      padding: 3px 10px; border-radius: var(--radius-full);
+    }
+
+    .shared-body {
+      flex: 1; overflow-y:auto;
+      padding: var(--space-8) var(--space-4);
+    }
+
+    .shared-container {
+      max-width: var(--max-message-width);
+      margin: 0 auto;
+    }
+
+    .shared-title {
+      font-size: var(--text-xl); font-weight: var(--weight-semibold);
+      margin-bottom: var(--space-6); color: var(--text);
+      letter-spacing: -0.02em;
+    }
+
+    .shared-messages {
+      display:flex; flex-direction:column; gap: var(--space-2);
+    }
+
+    .shared-footer {
+      text-align:center; padding: var(--space-6);
+      border-top: 1px solid var(--border-soft);
+      font-size: var(--text-sm); color: var(--text-muted);
+    }
+
+    .shared-footer a { color: var(--accent); }
+
+    .shared-error {
+      display:flex; flex-direction:column; align-items:center;
+      justify-content:center; gap: var(--space-4);
+      padding: var(--space-16); text-align:center;
+    }
+
+    .shared-error-title { font-size: var(--text-xl); font-weight: var(--weight-semibold); }
+    .shared-error-sub { font-size: var(--text-base); color: var(--text-muted); }
+  </style>
+</head>
+<body>
+
+<header class="shared-header">
+  <a href="/" class="shared-logo">
+    <div class="shared-logo-mark">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+        <path d="M3 10 Q8 3 13 10" stroke="white" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+        <circle cx="8" cy="6" r="1.5" fill="white"/>
+      </svg>
+    </div>
+    SIA
+  </a>
+  <span class="shared-badge">Shared conversation</span>
+</header>
+
+<div class="shared-body">
+  <div class="shared-container">
+    <div id="shared-content">
+      <!-- Loading state -->
+      <div style="display:flex;align-items:center;gap:var(--space-3);color:var(--text-muted);padding:var(--space-8) 0;">
+        <div class="loader-dots"><span></span><span></span><span></span></div>
+        Loading conversation...
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer class="shared-footer">
+  <p>This is a shared conversation from <a href="/">SIA</a>. <a href="/login">Create an account</a> to start your own.</p>
+</footer>
+
+<script type="module">
+import { initRenderer, renderMessage, appendMessage } from '/src/js/renderer.js';
+
+initRenderer();
+
+async function loadShared() {
+  // Extract token from URL: /shared/:token
+  const token = window.location.pathname.split('/').pop();
+  if (!token) return showError('No share token provided.');
+
+  try {
+    const res  = await fetch(`/api/shared/${token}`);
+
+    if (res.status === 410) return showError('This share link has expired.');
+    if (res.status === 404) return showError('This shared conversation could not be found.');
+    if (!res.ok)            return showError('Failed to load conversation.');
+
+    const data = await res.json();
+    const conv = data.conversation;
+    const msgs = data.messages ?? [];
+
+    document.title = `${conv.title} — SIA`;
+
+    const content  = document.getElementById('shared-content');
+    content.innerHTML = '';
+
+    const title = document.createElement('h1');
+    title.className   = 'shared-title';
+    title.textContent = conv.title;
+    content.appendChild(title);
+
+    const msgContainer = document.createElement('div');
+    msgContainer.className = 'shared-messages';
+
+    for (const msg of msgs) {
+      appendMessage(msg, msgContainer);
+    }
+
+    content.appendChild(msgContainer);
+
+  } catch (e) {
+    showError('Something went wrong loading this conversation.');
+  }
+}
+
+function showError(message) {
+  document.getElementById('shared-content').innerHTML = `
+    <div class="shared-error">
+      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="1.5">
+        <circle cx="12" cy="12" r="10"/>
+        <line x1="15" y1="9" x2="9" y2="15"/>
+        <line x1="9" y1="9" x2="15" y2="15"/>
+      </svg>
+      <div class="shared-error-title">Conversation unavailable</div>
+      <div class="shared-error-sub">${message}</div>
+      <a href="/" class="btn btn-primary">Go to SIA</a>
+    </div>
+  `;
+}
+
+loadShared();
+</script>
+
+</body>
+</html>
