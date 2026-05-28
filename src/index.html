@@ -1,454 +1,675 @@
-<!-- src/index.html -->
+<!-- index.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="SIA — Your intelligent assistant." />
-  <meta name="theme-color" content="#0d0d0f" />
-  <meta name="robots" content="noindex, nofollow" />
   <title>SIA</title>
-
-  <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
-
-  <!-- Highlight.js -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css" />
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js" defer></script>
-
-  <!-- Marked.js -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/9.1.6/marked.min.js" defer></script>
-
-  <!-- CSS -->
-<link rel="stylesheet" href="/css/base.css" />
-<link rel="stylesheet" href="/css/layout.css" />
-<link rel="stylesheet" href="/css/messages.css" />
-<link rel="stylesheet" href="/css/components.css" />
-
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/9.1.6/marked.min.js"></script>
+  <link rel="stylesheet" href="/css/base.css" />
+  <link rel="stylesheet" href="/css/layout.css" />
+  <link rel="stylesheet" href="/css/messages.css" />
+  <link rel="stylesheet" href="/css/components.css" />
   <style>
-    /* Page-specific overrides */
     .app-shell { opacity: 0; transition: opacity 0.2s ease; }
     .app-shell.ready { opacity: 1; }
   </style>
 </head>
 <body>
 
-<!-- Sidebar overlay (mobile) -->
-<div class="sidebar-overlay" id="sidebar-overlay" aria-hidden="true"></div>
+<div class="sidebar-overlay" id="sidebar-overlay"></div>
 
 <div class="app-shell" id="app-shell">
-
-  <!-- ── Sidebar ──────────────────────────────────────────────────── -->
-  <aside class="sidebar" id="sidebar" aria-label="Conversations">
-
+  <aside class="sidebar" id="sidebar">
     <div class="sidebar-header">
-      <a href="/" class="sidebar-logo" aria-label="SIA home">
-        <div class="sidebar-logo-mark" aria-hidden="true">
-          <svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M4 11 Q8 4 12 11" stroke="white" stroke-width="1.8" fill="none" stroke-linecap="round"/>
-            <circle cx="8" cy="6.5" r="1.5" fill="white"/>
-          </svg>
+      <a href="/" class="sidebar-logo">
+        <div class="sidebar-logo-mark">
+          <svg viewBox="0 0 16 16" fill="none"><path d="M3 11 Q8 4 13 11" stroke="white" stroke-width="1.8" fill="none" stroke-linecap="round"/><circle cx="8" cy="7" r="1.5" fill="white"/></svg>
         </div>
         SIA
       </a>
-
-      <button class="new-chat-btn" id="new-chat-btn" title="New chat" aria-label="New chat">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
-          <path d="M12 5v14M5 12h14"/>
-        </svg>
+      <button class="new-chat-btn" id="new-chat-btn" title="New chat">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
       </button>
     </div>
-
-    <nav class="sidebar-scroll" aria-label="Conversation history">
-      <div id="conversation-list">
-        <p class="sidebar-empty">No conversations yet.</p>
-      </div>
+    <nav class="sidebar-scroll">
+      <div id="conversation-list"><p class="sidebar-empty">No conversations yet.</p></div>
     </nav>
-
     <div class="sidebar-footer">
-      <div class="sidebar-user" id="sidebar-user-btn" role="button" tabindex="0" aria-label="Account options">
-        <div class="sidebar-avatar" id="sidebar-avatar" aria-hidden="true">—</div>
+      <div class="sidebar-user" id="user-menu-btn" tabindex="0">
+        <div class="sidebar-avatar" id="user-avatar">—</div>
         <div class="sidebar-user-info">
-          <div class="sidebar-user-name truncate" id="sidebar-user-name">Loading...</div>
-          <div class="sidebar-user-email truncate" id="sidebar-user-email"></div>
+          <div class="sidebar-user-name truncate" id="user-name">Loading...</div>
+          <div class="sidebar-user-email truncate" id="user-email"></div>
         </div>
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-          <polyline points="6 9 12 15 18 9"/>
-        </svg>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
       </div>
     </div>
-
   </aside>
 
-  <!-- ── Main ─────────────────────────────────────────────────────── -->
-  <main class="main" id="main">
-
-    <!-- Chat header -->
-    <header class="chat-header" id="chat-header">
-      <button class="sidebar-toggle" id="sidebar-toggle" aria-label="Toggle sidebar">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
-          <line x1="3" y1="6" x2="21" y2="6"/>
-          <line x1="3" y1="12" x2="21" y2="12"/>
-          <line x1="3" y1="18" x2="21" y2="18"/>
-        </svg>
+  <main class="main">
+    <header class="chat-header">
+      <button class="sidebar-toggle" id="sidebar-toggle">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
       </button>
-
       <span class="chat-header-title" id="chat-title"></span>
-
-      <button class="action-btn" id="memory-toggle-btn" title="Memory" aria-label="Toggle memory panel" style="width:34px;height:34px;border-radius:var(--radius-md);">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
-          <path d="M12 2a7 7 0 0 1 7 7c0 3.5-2 6-4 7.4V18a1 1 0 0 1-1 1h-4a1 1 0 0 1-1-1v-1.6C7 15 5 12.5 5 9a7 7 0 0 1 7-7z"/>
-          <line x1="9" y1="22" x2="15" y2="22"/>
-          <line x1="9.5" y1="18" x2="14.5" y2="18"/>
-        </svg>
-      </button>
     </header>
 
-    <!-- Messages -->
-    <section class="messages-area" id="messages-area" aria-label="Messages" aria-live="polite">
+    <section class="messages-area" id="messages-area">
       <div class="messages-container" id="messages-container">
-
-        <!-- Empty state (shown when no active conversation) -->
         <div class="empty-state" id="empty-state">
-          <div class="empty-logo" aria-hidden="true">
-            <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
-              <path d="M6 18 Q14 6 22 18" stroke="var(--accent)" stroke-width="2.2" fill="none" stroke-linecap="round"/>
-              <circle cx="14" cy="11" r="2.8" fill="var(--accent)"/>
-            </svg>
+          <div class="empty-logo">
+            <svg width="28" height="28" viewBox="0 0 28 28" fill="none"><path d="M5 19 Q14 6 23 19" stroke="var(--accent)" stroke-width="2.2" fill="none" stroke-linecap="round"/><circle cx="14" cy="11" r="2.8" fill="var(--accent)"/></svg>
           </div>
           <h1 class="empty-title">How can I help?</h1>
           <p class="empty-subtitle">Ask me anything — I'm here to assist.</p>
-          <div class="empty-prompts" aria-label="Suggested prompts">
+          <div class="empty-prompts">
             <button class="empty-prompt-btn" data-prompt="Explain how large language models work">Explain how large language models work</button>
-            <button class="empty-prompt-btn" data-prompt="Write a Python script to scrape a website">Write a Python script to scrape a website</button>
-            <button class="empty-prompt-btn" data-prompt="What are the best practices for REST API design?">Best practices for REST API design</button>
+            <button class="empty-prompt-btn" data-prompt="Write a Python script to read a CSV file">Write a Python script to read a CSV file</button>
+            <button class="empty-prompt-btn" data-prompt="What are best practices for REST API design?">Best practices for REST API design</button>
             <button class="empty-prompt-btn" data-prompt="Summarize the key ideas behind stoicism">Key ideas behind stoicism</button>
           </div>
         </div>
-
       </div>
     </section>
 
-    <!-- Input area -->
-    <footer class="input-area" aria-label="Message input">
+    <footer class="input-area">
       <div class="input-wrap">
-
-        <div class="input-box" id="input-box">
-
-          <!-- Image preview (shown after upload) -->
-          <div class="input-image-preview" id="input-image-preview" aria-label="Attached image">
-            <img class="input-image-thumb" id="input-image-thumb" src="" alt="Attached image preview" />
-            <span id="input-image-name" style="font-size:var(--text-xs);color:var(--text-muted);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"></span>
-            <button class="input-image-remove" id="input-image-remove" aria-label="Remove image">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
-              </svg>
+        <div class="input-box">
+          <div class="input-image-preview" id="image-preview">
+            <img class="input-image-thumb" id="image-thumb" src="" alt="Preview" />
+            <span id="image-name" style="flex:1;font-size:var(--text-xs);color:var(--text-muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></span>
+            <button class="input-image-remove" id="image-remove">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
             </button>
           </div>
-
-          <!-- Upload progress -->
-          <div class="upload-progress-bar" id="upload-progress-bar">
-            <div class="upload-progress-fill" id="upload-progress-fill"></div>
-          </div>
-
+          <div class="upload-progress-bar" id="progress-bar"><div class="upload-progress-fill" id="progress-fill"></div></div>
           <div class="input-row">
-            <textarea
-              id="message-input"
-              placeholder="Message SIA..."
-              rows="1"
-              autocomplete="off"
-              spellcheck="true"
-              aria-label="Message input"
-              aria-multiline="true"
-            ></textarea>
-
+            <textarea id="message-input" placeholder="Message SIA..." rows="1" autocomplete="off" spellcheck="true"></textarea>
             <div class="input-actions">
-              <!-- Image upload -->
-              <button class="input-icon-btn" id="image-upload-btn" title="Attach image" aria-label="Attach image">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
-                  <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
-                  <circle cx="8.5" cy="8.5" r="1.5"/>
-                  <polyline points="21 15 16 10 5 21"/>
-                </svg>
+              <button class="input-icon-btn" id="image-btn" title="Attach image">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
               </button>
-
-              <!-- Cancel (shown while waiting) -->
-              <button id="cancel-btn" aria-label="Cancel response" title="Cancel">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                  <rect x="3" y="3" width="18" height="18" rx="2"/>
-                </svg>
+              <button id="cancel-btn" style="display:none;width:32px;height:32px;border-radius:var(--radius-md);background:var(--surface-2);border:1px solid var(--border);color:var(--text-secondary);align-items:center;justify-content:center;cursor:pointer" title="Cancel">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="3" width="18" height="18" rx="2"/></svg>
               </button>
-
-              <!-- Send -->
-              <button id="send-btn" aria-label="Send message" title="Send">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                  <line x1="12" y1="19" x2="12" y2="5"/>
-                  <polyline points="5 12 12 5 19 12"/>
-                </svg>
+              <button id="send-btn">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg>
               </button>
             </div>
           </div>
         </div>
-
-        <p class="input-hint">Press <kbd style="font-family:var(--font-mono);font-size:0.7rem;background:var(--surface-2);padding:1px 5px;border-radius:4px;border:1px solid var(--border);">Shift+Enter</kbd> for new line &nbsp;·&nbsp; Click Send to submit</p>
+        <p class="input-hint">Click Send to submit &nbsp;·&nbsp; Shift+Enter for new line</p>
       </div>
     </footer>
-
   </main>
-
-  <!-- ── Memory Panel ──────────────────────────────────────────────── -->
-  <aside class="memory-panel" id="memory-panel" aria-label="Memory" aria-hidden="true">
-    <div class="memory-panel-header">
-      <h2 class="memory-panel-title">Memory</h2>
-      <button class="action-btn" id="memory-close-btn" aria-label="Close memory panel" style="width:28px;height:28px;border-radius:var(--radius-md);">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
-        </svg>
-      </button>
-    </div>
-
-    <div class="memory-list" id="memory-list" aria-label="Saved memories">
-      <p class="sidebar-empty">No memories saved yet.</p>
-    </div>
-
-    <div class="memory-add">
-      <input
-        class="memory-add-input"
-        id="memory-add-input"
-        type="text"
-        placeholder="Add a memory..."
-        aria-label="Add memory"
-        maxlength="500"
-      />
-      <button class="btn btn-primary btn-sm" id="memory-add-btn">Save</button>
-    </div>
-  </aside>
-
 </div>
 
-<!-- Hidden file input for image upload -->
-<input type="file" id="image-file-input" accept="image/jpeg,image/png,image/webp,image/gif" style="display:none;" aria-hidden="true" />
+<input type="file" id="file-input" accept="image/jpeg,image/png,image/webp,image/gif" style="display:none" />
 
-<!-- ── Scripts ─────────────────────────────────────────────────────── -->
-<script type="module">
-import { initAuth, currentUser, logout, isAuthenticated } from '/js/auth.js';
-import { initRenderer }                                    from '/js/renderer.js';
-import { loadConversation, loadConversationList,
-         sendMessage, cancelPending, onUserTyping,
-         createNewConversation, getActiveConversationId }  from '/js/chat.js';
-import { uploadImage }                                     from '/js/api.js';
-import { memory as memoryAPI }                             from '/js/api.js';
-import { initAutoExpand, initScrollTracking,
-         resetScrollTracking, showToast,
-         openDropdown, scrollToBottom }                    from '/js/ui.js';
+<script>
+const API = '/api';
+let _user           = null;
+let _activeConvId   = null;
+let _messages       = [];
+let _pending        = false;
+let _pollTimer      = null;
+let _pingTimer      = null;
+let _pendingMsgId   = null;
+let _imageMetaId    = null;
+let _convList       = [];
 
-// ── Boot ────────────────────────────────────────────────────────────
-
+// ── Boot ────────────────────────────────────────────────────────────────────
 async function boot() {
-  initRenderer();
+  try {
+    const r = await fetch(API + '/auth/me', { credentials: 'include' });
+    const d = await r.json();
+    _user = d.user;
+  } catch(e) {}
 
-  const user = await initAuth();
-
-  if (!user) {
-    window.location.href = `/?next=${encodeURIComponent(window.location.pathname)}`;
+  if (!_user) {
+    location.href = '/login?next=' + encodeURIComponent(location.pathname);
     return;
   }
 
-  // Populate user info in sidebar
-  document.getElementById('sidebar-user-name').textContent = user.display_name || user.email;
-  document.getElementById('sidebar-user-email').textContent = user.email;
-  const initials = (user.display_name || user.email).slice(0, 2).toUpperCase();
-  document.getElementById('sidebar-avatar').textContent = initials;
+  document.getElementById('user-name').textContent  = _user.display_name || _user.email;
+  document.getElementById('user-email').textContent = _user.email;
+  document.getElementById('user-avatar').textContent = (_user.display_name || _user.email).slice(0,2).toUpperCase();
 
-  // Load conversation list
-  await loadConversationList();
+  await loadConvList();
 
-  // Route based on URL
-  const path = window.location.pathname;
+  const path = location.pathname;
   if (path.startsWith('/c/')) {
     const id = path.slice(3);
-    if (id) {
-      document.getElementById('empty-state').style.display = 'none';
-      await loadConversation(id);
-    }
+    if (id) await loadConversation(id);
   }
 
-  // Ready
   document.getElementById('app-shell').classList.add('ready');
   document.getElementById('message-input').focus();
 }
 
-// ── Routing (SPA popstate) ───────────────────────────────────────────
-
-window.addEventListener('popstate', async () => {
-  const path = window.location.pathname;
-  resetScrollTracking();
-
-  if (path === '/new' || path === '/') {
-    document.getElementById('empty-state').style.display = '';
-    document.getElementById('messages-container').innerHTML = '';
-    document.getElementById('messages-container').appendChild(
-      document.getElementById('empty-state')
-    );
-    document.title = 'SIA';
-    document.getElementById('chat-title').textContent = '';
-    return;
-  }
-
-  if (path.startsWith('/c/')) {
-    const id = path.slice(3);
-    document.getElementById('empty-state').style.display = 'none';
-    await loadConversation(id);
-  }
-});
-
-// ── Input ────────────────────────────────────────────────────────────
-
-const textarea   = document.getElementById('message-input');
-const sendBtn    = document.getElementById('send-btn');
-const cancelBtn  = document.getElementById('cancel-btn');
-const messagesArea = document.getElementById('messages-area');
-
-initAutoExpand(textarea);
-initScrollTracking(messagesArea);
-
-textarea.addEventListener('input', () => onUserTyping());
-
-// Enter = newline, Send button = submit
-textarea.addEventListener('keydown', (e) => {
-  if (e.key === 'Enter' && !e.shiftKey) {
-    // Do nothing — user must click Send
-    // (Shift+Enter naturally creates newline)
-  }
-});
-
-sendBtn.addEventListener('click', () => doSend());
-cancelBtn.addEventListener('click', () => cancelPending());
-
-async function doSend() {
-  const content = textarea.value;
-  if (!content.trim() && !_pendingImageMetaId) return;
-
-  const imageMetaId = _pendingImageMetaId;
-
-  // Clear input
-  textarea.value = '';
-  textarea.style.height = 'auto';
-  _clearImagePreview();
-
-  await sendMessage(content, imageMetaId);
+// ── Conversations ───────────────────────────────────────────────────────────
+async function loadConvList() {
+  try {
+    const r = await fetch(API + '/conversations', { credentials: 'include' });
+    const d = await r.json();
+    _convList = d.conversations ?? [];
+    renderSidebar(_convList);
+  } catch(e) {}
 }
 
-// ── Image Upload ─────────────────────────────────────────────────────
+async function loadConversation(id) {
+  _activeConvId = id;
+  stopPoll();
+  try {
+    const [cr, mr] = await Promise.all([
+      fetch(API + '/conversations/' + id, { credentials: 'include' }),
+      fetch(API + '/conversations/' + id + '/messages', { credentials: 'include' }),
+    ]);
+    const cd = await cr.json();
+    const md = await mr.json();
+    _messages = md.messages ?? [];
 
-const imageUploadBtn  = document.getElementById('image-upload-btn');
-const imageFileInput  = document.getElementById('image-file-input');
-const imagePreview    = document.getElementById('input-image-preview');
-const imageThumb      = document.getElementById('input-image-thumb');
-const imageName       = document.getElementById('input-image-name');
-const imageRemove     = document.getElementById('input-image-remove');
-const progressBar     = document.getElementById('upload-progress-bar');
-const progressFill    = document.getElementById('upload-progress-fill');
+    document.getElementById('empty-state').style.display = 'none';
+    document.getElementById('chat-title').textContent = cd.conversation?.title ?? '';
+    document.title = (cd.conversation?.title ?? 'Chat') + ' — SIA';
 
-let _pendingImageMetaId = null;
+    const container = document.getElementById('messages-container');
+    container.innerHTML = '';
+    _messages.forEach(m => container.appendChild(buildMsgEl(m)));
+    scrollBottom(true);
 
-imageUploadBtn.addEventListener('click', () => imageFileInput.click());
+    highlightConv(id);
+    startPing(id);
 
-imageFileInput.addEventListener('change', async () => {
-  const file = imageFileInput.files[0];
-  if (!file) return;
+    const pendingMsg = _messages.find(m => m.role === 'assistant' && m.status === 'pending');
+    if (pendingMsg) {
+      _pendingMsgId = pendingMsg.id;
+      _pending = true;
+      setLocked(true);
+      startPoll(id, pendingMsg.id);
+    }
+  } catch(e) { showToast('Failed to load conversation', 'error'); }
+}
 
-  // Validate
-  const MAX_MB = 10;
-  if (file.size > MAX_MB * 1024 * 1024) {
-    showToast(`Image must be under ${MAX_MB}MB.`, 'error');
-    imageFileInput.value = '';
-    return;
+async function createConversation() {
+  const r = await fetch(API + '/conversations', { method: 'POST', credentials: 'include' });
+  const d = await r.json();
+  const conv = d.conversation;
+  history.pushState({}, '', '/c/' + conv.id);
+  _activeConvId = conv.id;
+  _convList.unshift(conv);
+  renderSidebar(_convList);
+  highlightConv(conv.id);
+  document.getElementById('empty-state').style.display = 'none';
+  document.getElementById('chat-title').textContent = '';
+  document.title = 'SIA';
+  startPing(conv.id);
+  return conv.id;
+}
+
+// ── Send ─────────────────────────────────────────────────────────────────────
+async function doSend() {
+  if (_pending) return;
+  const ta      = document.getElementById('message-input');
+  const content = ta.value.trim();
+  if (!content && !_imageMetaId) return;
+
+  if (!_activeConvId) {
+    try { await createConversation(); } catch(e) { showToast('Could not start conversation', 'error'); return; }
   }
 
-  const allowed = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
-  if (!allowed.includes(file.type)) {
-    showToast('Only JPEG, PNG, WebP, or GIF images allowed.', 'error');
-    imageFileInput.value = '';
-    return;
-  }
+  const imageMetaId = _imageMetaId;
+  ta.value = '';
+  ta.style.height = 'auto';
+  clearImagePreview();
+  setLocked(true);
 
-  // Preview
-  const reader = new FileReader();
-  reader.onload = (e) => {
-    imageThumb.src = e.target.result;
-    imageName.textContent = file.name;
-    imagePreview.classList.add('visible');
-  };
-  reader.readAsDataURL(file);
-
-  // Upload
-  progressBar.classList.add('visible');
-  progressFill.style.width = '0%';
-  imageUploadBtn.disabled = true;
+  // Optimistic user message
+  const optMsg = { id: 'opt_' + Date.now(), role: 'user', content, image_meta_id: imageMetaId, status: 'done', created_at: new Date().toISOString() };
+  _messages.push(optMsg);
+  const container = document.getElementById('messages-container');
+  container.appendChild(buildMsgEl(optMsg));
+  showTyping(container);
+  scrollBottom();
 
   try {
-    const data = await uploadImage(file, {
-      onProgress: (pct) => {
-        progressFill.style.width = `${pct}%`;
-      },
+    const r = await fetch(API + '/conversations/' + _activeConvId + '/messages', {
+      method: 'POST', credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ content, image_meta_id: imageMetaId }),
     });
-    _pendingImageMetaId = data.id;
-    showToast('Image attached.', 'success', 2000);
-  } catch (err) {
-    showToast(err.message || 'Upload failed.', 'error');
-    _clearImagePreview();
-  } finally {
-    progressBar.classList.remove('visible');
-    imageUploadBtn.disabled = false;
-    imageFileInput.value = '';
+    const d = await r.json();
+    if (!r.ok) throw new Error(d.error);
+
+    // Replace optimistic
+    const optEl = container.querySelector('[data-id="' + optMsg.id + '"]');
+    if (optEl) optEl.dataset.id = d.user_message.id;
+
+    hideTyping(container);
+    _pendingMsgId = d.assistant_message.id;
+    _messages.push(d.assistant_message);
+    container.appendChild(buildMsgEl(d.assistant_message));
+    scrollBottom();
+
+    // Update title in sidebar
+    setTimeout(async () => {
+      try {
+        const cr = await fetch(API + '/conversations/' + _activeConvId, { credentials: 'include' });
+        const cd = await cr.json();
+        if (cd.conversation?.title && cd.conversation.title !== 'New conversation') {
+          document.getElementById('chat-title').textContent = cd.conversation.title;
+          document.title = cd.conversation.title + ' — SIA';
+          const sidebarItem = document.querySelector('[data-conv-id="' + _activeConvId + '"] .conv-title');
+          if (sidebarItem) sidebarItem.textContent = cd.conversation.title;
+        }
+      } catch(e) {}
+    }, 2000);
+
+    startPoll(_activeConvId, d.assistant_message.id);
+  } catch(e) {
+    hideTyping(container);
+    const optEl = container.querySelector('[data-id="' + optMsg.id + '"]');
+    if (optEl) optEl.remove();
+    _messages = _messages.filter(m => m.id !== optMsg.id);
+    setLocked(false);
+    showToast(e.message || 'Failed to send', 'error');
   }
-});
-
-imageRemove.addEventListener('click', _clearImagePreview);
-
-function _clearImagePreview() {
-  _pendingImageMetaId = null;
-  imageThumb.src = '';
-  imageName.textContent = '';
-  imagePreview.classList.remove('visible');
-  imageFileInput.value = '';
 }
 
-// ── Sidebar Toggle (mobile) ──────────────────────────────────────────
+// ── Polling ──────────────────────────────────────────────────────────────────
+function startPoll(convId, msgId) {
+  stopPoll();
+  _pollTimer = setInterval(async () => {
+    try {
+      const r = await fetch(API + '/conversations/' + convId + '/messages', { credentials: 'include' });
+      const d = await r.json();
+      const msg = (d.messages ?? []).find(m => m.id === msgId);
+      if (!msg) return;
 
-const sidebar        = document.getElementById('sidebar');
-const sidebarOverlay = document.getElementById('sidebar-overlay');
-const sidebarToggle  = document.getElementById('sidebar-toggle');
+      const el = document.getElementById('msg-' + msgId);
+      if (el) {
+        const contentEl = el.querySelector('.message-content');
+        if (contentEl && msg.content) {
+          contentEl.innerHTML = renderMd(msg.content);
+          if (msg.status === 'streaming' || msg.status === 'pending') {
+            contentEl.innerHTML += '<span class="cursor-blink"></span>';
+          }
+          bindCodeCopy(el);
+        }
+      }
+      scrollBottom();
 
-sidebarToggle.addEventListener('click', toggleSidebar);
-sidebarOverlay.addEventListener('click', closeSidebar);
+      if (msg.status === 'done' || msg.status === 'cancelled') {
+        stopPoll();
+        _pending = false;
+        _pendingMsgId = null;
+        setLocked(false);
+        // Final render
+        if (el) {
+          const contentEl = el.querySelector('.message-content');
+          if (contentEl) contentEl.innerHTML = renderMd(msg.content);
+          bindCodeCopy(el);
+          addMsgActions(el, msg);
+        }
+        scrollBottom(true);
+        await loadConvList();
+      }
+    } catch(e) {}
+  }, 1200);
+}
 
-document.getElementById('new-chat-btn').addEventListener('click', () => {
-  closeSidebar();
-  history.pushState({}, '', '/new');
-  window.dispatchEvent(new PopStateEvent('popstate'));
-  textarea.focus();
-});
+function stopPoll() {
+  if (_pollTimer) { clearInterval(_pollTimer); _pollTimer = null; }
+}
 
-function toggleSidebar() {
-  const open = sidebar.classList.toggle('open');
-  sidebarOverlay.classList.toggle('visible', open);
-  sidebar.setAttribute('aria-hidden', String(!open));
-  sidebarOverlay.setAttribute('aria-hidden', String(!open));
+// ── Ping ─────────────────────────────────────────────────────────────────────
+function startPing(convId) {
+  if (_pingTimer) clearInterval(_pingTimer);
+  fetch(API + '/presence/ping', { method: 'POST', credentials: 'include', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ conversation_id: convId, state: 'active' }) }).catch(()=>{});
+  _pingTimer = setInterval(() => {
+    const state = document.hidden ? 'away' : 'active';
+    fetch(API + '/presence/ping', { method: 'POST', credentials: 'include', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ conversation_id: convId, state }) }).catch(()=>{});
+  }, 15000);
+}
+
+// ── Message rendering ─────────────────────────────────────────────────────────
+function buildMsgEl(msg) {
+  const wrap = document.createElement('div');
+  wrap.className = 'message message-' + msg.role;
+  wrap.id = 'msg-' + msg.id;
+  wrap.dataset.id = msg.id;
+
+  const isUser = msg.role === 'user';
+  const contentHtml = isUser
+    ? escHtml(msg.content || '')
+    : (msg.status === 'pending' ? '<span class="cursor-blink"></span>' : renderMd(msg.content || ''));
+
+  wrap.innerHTML = `
+    <div class="message-inner">
+      <div class="message-avatar">${isUser ? userAvatar() : siaAvatar()}</div>
+      <div class="message-body">
+        ${msg.image_url ? `<div class="message-image-wrap"><img class="message-image" src="${escHtml(msg.image_url)}" alt="Attached image" /></div>` : ''}
+        <div class="message-content">${contentHtml}</div>
+        <div class="message-meta">
+          <span class="message-timestamp">${fmtTime(msg.created_at)}</span>
+          <div class="message-actions" id="actions-${msg.id}"></div>
+        </div>
+      </div>
+    </div>`;
+
+  if (!isUser && msg.status === 'done') addMsgActions(wrap, msg);
+  bindCodeCopy(wrap);
+  return wrap;
+}
+
+function addMsgActions(wrap, msg) {
+  const actions = wrap.querySelector('.message-actions') || wrap.getElementById('actions-' + msg.id);
+  if (!actions || actions.dataset.bound) return;
+  actions.dataset.bound = '1';
+
+  // Copy btn
+  const copyBtn = document.createElement('button');
+  copyBtn.className = 'action-btn copy-btn';
+  copyBtn.title = 'Copy';
+  copyBtn.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>';
+  copyBtn.onclick = () => copyText(msg.content, copyBtn);
+  actions.appendChild(copyBtn);
+
+  // Thumbs up
+  const upBtn = document.createElement('button');
+  upBtn.className = 'action-btn reaction-btn reaction-up';
+  upBtn.title = 'Helpful';
+  upBtn.setAttribute('aria-pressed', 'false');
+  upBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3H14z"/><path d="M7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/></svg>';
+  upBtn.onclick = () => doReaction(msg.id, 'up', upBtn, downBtn);
+  actions.appendChild(upBtn);
+
+  // Thumbs down
+  const downBtn = document.createElement('button');
+  downBtn.className = 'action-btn reaction-btn reaction-down';
+  downBtn.title = 'Not helpful';
+  downBtn.setAttribute('aria-pressed', 'false');
+  downBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 15v4a3 3 0 0 0 3 3l4-9V2H5.72a2 2 0 0 0-2 1.7l-1.38 9a2 2 0 0 0 2 2.3H10z"/><path d="M17 2h2.67A2.31 2.31 0 0 1 22 4v7a2.31 2.31 0 0 1-2.33 2H17"/></svg>';
+  downBtn.onclick = () => doReaction(msg.id, 'down', downBtn, upBtn);
+  actions.appendChild(downBtn);
+}
+
+async function doReaction(msgId, type, btn, otherBtn) {
+  const pressed = btn.getAttribute('aria-pressed') === 'true';
+  try {
+    if (pressed) {
+      await fetch(API + '/messages/' + msgId + '/reactions', { method: 'DELETE', credentials: 'include' });
+      btn.setAttribute('aria-pressed', 'false');
+    } else {
+      await fetch(API + '/messages/' + msgId + '/reactions', {
+        method: 'POST', credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ type }),
+      });
+      btn.setAttribute('aria-pressed', 'true');
+      otherBtn.setAttribute('aria-pressed', 'false');
+    }
+  } catch(e) {}
+}
+
+function renderMd(text) {
+  if (!text) return '';
+  if (window.marked) {
+    try { return window.marked.parse(text); } catch(e) {}
+  }
+  return escHtml(text).replace(/\n/g, '<br>');
+}
+
+function bindCodeCopy(container) {
+  container.querySelectorAll('.code-copy-btn:not([data-bound])').forEach(btn => {
+    btn.dataset.bound = '1';
+    btn.addEventListener('click', () => copyText(btn.dataset.code || '', btn));
+  });
+}
+
+function showTyping(container) {
+  if (container.querySelector('.typing-indicator-wrap')) return;
+  const el = document.createElement('div');
+  el.className = 'message message-assistant typing-indicator-wrap';
+  el.innerHTML = `<div class="message-inner"><div class="message-avatar">${siaAvatar()}</div><div class="message-body"><div class="message-content"><div class="typing-indicator"><span></span><span></span><span></span></div></div></div></div>`;
+  container.appendChild(el);
+}
+
+function hideTyping(container) {
+  container.querySelector('.typing-indicator-wrap')?.remove();
+}
+
+// ── Sidebar ────────────────────────────────────────────────────────────────────
+function renderSidebar(list) {
+  const el = document.getElementById('conversation-list');
+  if (!list.length) { el.innerHTML = '<p class="sidebar-empty">No conversations yet.</p>'; return; }
+
+  const groups = {};
+  const now = Date.now();
+  list.forEach(c => {
+    const diff = Math.floor((now - new Date(c.updated_at || c.created_at).getTime()) / 86400000);
+    const g = diff === 0 ? 'Today' : diff === 1 ? 'Yesterday' : diff <= 7 ? 'This week' : 'Older';
+    if (!groups[g]) groups[g] = [];
+    groups[g].push(c);
+  });
+
+  el.innerHTML = '';
+  ['Today','Yesterday','This week','Older'].forEach(label => {
+    if (!groups[label]) return;
+    const grp = document.createElement('div');
+    grp.className = 'sidebar-group';
+    grp.innerHTML = `<span class="sidebar-group-label">${label}</span>`;
+    groups[label].forEach(c => {
+      const a = document.createElement('a');
+      a.className = 'sidebar-item' + (c.id === _activeConvId ? ' active' : '');
+      a.href = '/c/' + c.id;
+      a.dataset.convId = c.id;
+      a.innerHTML = `
+        <span class="conv-title truncate">${escHtml(c.title || 'Untitled')}</span>
+        <span class="conv-actions">
+          <button class="conv-btn conv-rename" title="Rename"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
+          <button class="conv-btn conv-delete" title="Delete"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg></button>
+        </span>`;
+
+      a.querySelector('.conv-rename').addEventListener('click', async e => {
+        e.preventDefault(); e.stopPropagation();
+        const t = prompt('Rename conversation:', c.title || 'Untitled');
+        if (!t || !t.trim()) return;
+        await fetch(API + '/conversations/' + c.id, { method: 'PATCH', credentials: 'include', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ title: t.trim() }) });
+        c.title = t.trim();
+        a.querySelector('.conv-title').textContent = t.trim();
+        if (c.id === _activeConvId) { document.getElementById('chat-title').textContent = t.trim(); document.title = t.trim() + ' — SIA'; }
+      });
+
+      a.querySelector('.conv-delete').addEventListener('click', async e => {
+        e.preventDefault(); e.stopPropagation();
+        if (!confirm('Delete this conversation?')) return;
+        await fetch(API + '/conversations/' + c.id, { method: 'DELETE', credentials: 'include' });
+        _convList = _convList.filter(x => x.id !== c.id);
+        renderSidebar(_convList);
+        if (c.id === _activeConvId) { history.pushState({}, '', '/'); resetChat(); }
+      });
+
+      a.addEventListener('click', e => {
+        e.preventDefault();
+        history.pushState({}, '', '/c/' + c.id);
+        loadConversation(c.id);
+        closeSidebar();
+      });
+
+      grp.appendChild(a);
+    });
+    el.appendChild(grp);
+  });
+}
+
+function highlightConv(id) {
+  document.querySelectorAll('.sidebar-item').forEach(el => el.classList.toggle('active', el.dataset.convId === id));
+}
+
+function resetChat() {
+  _activeConvId = null; _messages = []; _pending = false; _pendingMsgId = null;
+  stopPoll();
+  document.getElementById('messages-container').innerHTML = '';
+  document.getElementById('messages-container').appendChild(document.getElementById('empty-state') || (() => { const e = document.createElement('div'); e.id='empty-state'; return e; })());
+  document.getElementById('empty-state').style.display = '';
+  document.getElementById('chat-title').textContent = '';
+  document.title = 'SIA';
+  setLocked(false);
+}
+
+// ── UI helpers ────────────────────────────────────────────────────────────────
+function setLocked(locked) {
+  document.getElementById('message-input').disabled = locked;
+  document.getElementById('send-btn').disabled      = locked;
+  const cb = document.getElementById('cancel-btn');
+  cb.style.display = locked ? 'flex' : 'none';
+  _pending = locked;
+}
+
+function scrollBottom(force) {
+  const area = document.getElementById('messages-area');
+  const threshold = 100;
+  const atBottom  = area.scrollHeight - area.scrollTop - area.clientHeight < threshold;
+  if (force || atBottom) area.scrollTo({ top: area.scrollHeight, behavior: 'smooth' });
 }
 
 function closeSidebar() {
-  sidebar.classList.remove('open');
-  sidebarOverlay.classList.remove('visible');
-  sidebar.setAttribute('aria-hidden', 'true');
-  sidebarOverlay.setAttribute('aria-hidden', 'true');
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('sidebar-overlay').classList.remove('visible');
 }
 
-// ── Empty state prompt buttons ───────────────────────────────────────
+function siaAvatar() {
+  return '<svg class="avatar-sia" viewBox="0 0 32 32" fill="none"><circle cx="16" cy="16" r="16" fill="var(--accent)"/><path d="M9 21 Q16 10 23 21" stroke="white" stroke-width="2" fill="none" stroke-linecap="round"/><circle cx="16" cy="13" r="2.5" fill="white"/></svg>';
+}
+function userAvatar() {
+  return '<svg class="avatar-user" viewBox="0 0 32 32" fill="none"><circle cx="16" cy="16" r="16" fill="var(--surface-3)"/><circle cx="16" cy="13" r="5" fill="var(--text-muted)"/><path d="M6 26c0-5 4.5-8 10-8s10 3 10 8" fill="var(--text-muted)"/></svg>';
+}
 
+function fmtTime(str) {
+  try { return new Date(str).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }); } catch(e) { return ''; }
+}
+
+function escHtml(s) {
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+async function copyText(text, btn) {
+  try {
+    await navigator.clipboard.writeText(text);
+    if (btn) {
+      const orig = btn.innerHTML;
+      btn.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>';
+      setTimeout(() => { btn.innerHTML = orig; }, 1500);
+    }
+  } catch(e) {}
+}
+
+// ── Toast ──────────────────────────────────────────────────────────────────────
+function showToast(msg, type) {
+  let container = document.getElementById('toast-container');
+  if (!container) {
+    container = document.createElement('div');
+    container.id = 'toast-container';
+    document.body.appendChild(container);
+  }
+  const t = document.createElement('div');
+  t.className = 'toast toast-' + (type || 'info');
+  t.innerHTML = '<span class="toast-message">' + escHtml(msg) + '</span>';
+  container.appendChild(t);
+  requestAnimationFrame(() => t.classList.add('toast-visible'));
+  setTimeout(() => { t.classList.remove('toast-visible'); setTimeout(() => t.remove(), 300); }, 3500);
+}
+
+// ── Image upload ───────────────────────────────────────────────────────────────
+document.getElementById('image-btn').addEventListener('click', () => document.getElementById('file-input').click());
+document.getElementById('file-input').addEventListener('change', async function() {
+  const file = this.files[0];
+  if (!file) return;
+  if (file.size > 10 * 1024 * 1024) { showToast('Image must be under 10MB', 'error'); this.value = ''; return; }
+
+  const reader = new FileReader();
+  reader.onload = e => {
+    document.getElementById('image-thumb').src = e.target.result;
+    document.getElementById('image-name').textContent = file.name;
+    document.getElementById('image-preview').classList.add('visible');
+  };
+  reader.readAsDataURL(file);
+
+  document.getElementById('progress-bar').classList.add('visible');
+  document.getElementById('image-btn').disabled = true;
+
+  try {
+    const form = new FormData();
+    form.append('file', file);
+    const r = await fetch(API + '/images/upload', { method: 'POST', credentials: 'include', body: form });
+    const d = await r.json();
+    if (!r.ok) throw new Error(d.error);
+    _imageMetaId = d.id;
+    showToast('Image attached', 'success');
+  } catch(e) {
+    showToast(e.message || 'Upload failed', 'error');
+    clearImagePreview();
+  } finally {
+    document.getElementById('progress-bar').classList.remove('visible');
+    document.getElementById('image-btn').disabled = false;
+    this.value = '';
+  }
+});
+
+document.getElementById('image-remove').addEventListener('click', clearImagePreview);
+
+function clearImagePreview() {
+  _imageMetaId = null;
+  document.getElementById('image-thumb').src = '';
+  document.getElementById('image-name').textContent = '';
+  document.getElementById('image-preview').classList.remove('visible');
+}
+
+// ── Input ──────────────────────────────────────────────────────────────────────
+const textarea = document.getElementById('message-input');
+
+textarea.addEventListener('input', function() {
+  this.style.height = 'auto';
+  this.style.height = Math.min(this.scrollHeight, 200) + 'px';
+});
+
+textarea.addEventListener('keydown', function(e) {
+  if (e.key === 'Enter' && e.shiftKey) return; // allow shift+enter
+  if (e.key === 'Enter' && !e.shiftKey) {
+    // Do nothing — require click to send
+  }
+});
+
+document.getElementById('send-btn').addEventListener('click', doSend);
+document.getElementById('cancel-btn').addEventListener('click', async () => {
+  if (!_pendingMsgId || !_activeConvId) return;
+  stopPoll();
+  await fetch(API + '/conversations/' + _activeConvId + '/messages/' + _pendingMsgId + '/cancel', { method: 'POST', credentials: 'include' });
+  setLocked(false);
+  _pendingMsgId = null;
+});
+
+// ── Sidebar toggle ─────────────────────────────────────────────────────────────
+document.getElementById('sidebar-toggle').addEventListener('click', () => {
+  document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('sidebar-overlay').classList.toggle('visible');
+});
+document.getElementById('sidebar-overlay').addEventListener('click', closeSidebar);
+document.getElementById('new-chat-btn').addEventListener('click', () => {
+  history.pushState({}, '', '/');
+  resetChat();
+  closeSidebar();
+  document.getElementById('message-input').focus();
+});
+
+// ── Prompt suggestions ─────────────────────────────────────────────────────────
 document.querySelectorAll('.empty-prompt-btn').forEach(btn => {
   btn.addEventListener('click', () => {
     textarea.value = btn.dataset.prompt;
@@ -457,138 +678,59 @@ document.querySelectorAll('.empty-prompt-btn').forEach(btn => {
   });
 });
 
-// ── User account dropdown ────────────────────────────────────────────
-
-const sidebarUserBtn = document.getElementById('sidebar-user-btn');
-
-sidebarUserBtn.addEventListener('click', () => {
-  openDropdown(sidebarUserBtn, [
-    {
-      label: 'Memory',
-      action: () => openMemoryPanel(),
-    },
-    'divider',
-    {
-      label: 'Sign out',
-      danger: true,
-      action: () => logout(),
-    },
-  ]);
-});
-
-sidebarUserBtn.addEventListener('keydown', (e) => {
-  if (e.key === 'Enter' || e.key === ' ') {
-    e.preventDefault();
-    sidebarUserBtn.click();
-  }
-});
-
-// ── Memory Panel ─────────────────────────────────────────────────────
-
-const memoryPanel     = document.getElementById('memory-panel');
-const memoryList      = document.getElementById('memory-list');
-const memoryAddInput  = document.getElementById('memory-add-input');
-const memoryAddBtn    = document.getElementById('memory-add-btn');
-const memoryToggleBtn = document.getElementById('memory-toggle-btn');
-const memoryCloseBtn  = document.getElementById('memory-close-btn');
-
-memoryToggleBtn.addEventListener('click', openMemoryPanel);
-memoryCloseBtn.addEventListener('click', closeMemoryPanel);
-
-async function openMemoryPanel() {
-  memoryPanel.classList.add('open');
-  memoryPanel.setAttribute('aria-hidden', 'false');
-  await refreshMemoryList();
-  memoryAddInput.focus();
-}
-
-function closeMemoryPanel() {
-  memoryPanel.classList.remove('open');
-  memoryPanel.setAttribute('aria-hidden', 'true');
-}
-
-async function refreshMemoryList() {
-  try {
-    const data = await memoryAPI.list();
-    const items = data.memories ?? [];
-
-    if (items.length === 0) {
-      memoryList.innerHTML = '<p class="sidebar-empty">No memories saved yet.</p>';
-      return;
+// ── User menu ──────────────────────────────────────────────────────────────────
+document.getElementById('user-menu-btn').addEventListener('click', function() {
+  const existing = document.querySelector('.dropdown-menu');
+  if (existing) { existing.remove(); return; }
+  const menu = document.createElement('div');
+  menu.className = 'dropdown-menu';
+  menu.style.cssText = 'position:fixed;z-index:300;';
+  menu.innerHTML = `<button class="dropdown-item danger" id="logout-item">Sign out</button>`;
+  document.body.appendChild(menu);
+  const rect = this.getBoundingClientRect();
+  menu.style.bottom = (window.innerHeight - rect.top + 4) + 'px';
+  menu.style.left   = rect.left + 'px';
+  menu.querySelector('#logout-item').addEventListener('click', async () => {
+    await fetch(API + '/auth/logout', { method: 'POST', credentials: 'include' });
+    location.href = '/login';
+  });
+  setTimeout(() => document.addEventListener('click', function h(e) {
+    if (!menu.contains(e.target) && e.target !== document.getElementById('user-menu-btn')) {
+      menu.remove(); document.removeEventListener('click', h);
     }
+  }), 0);
+});
 
-    memoryList.innerHTML = '';
-    for (const mem of items) {
-      const item = document.createElement('div');
-      item.className = 'memory-item';
-      item.dataset.memoryId = mem.id;
-      item.innerHTML = `
-        <span class="memory-item-text">${_escHtml(mem.content)}</span>
-        <button class="memory-item-delete" aria-label="Delete memory" title="Delete">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <polyline points="3 6 5 6 21 6"/>
-            <path d="M19 6l-1 14H6L5 6"/>
-            <path d="M10 11v6"/><path d="M14 11v6"/>
-            <path d="M9 6V4h6v2"/>
-          </svg>
-        </button>
-      `;
+// ── SPA routing ────────────────────────────────────────────────────────────────
+window.addEventListener('popstate', async () => {
+  const path = location.pathname;
+  if (path === '/' || path === '/new') { resetChat(); return; }
+  if (path.startsWith('/c/')) { await loadConversation(path.slice(3)); }
+});
 
-      item.querySelector('.memory-item-delete').addEventListener('click', async () => {
+// ── Init ───────────────────────────────────────────────────────────────────────
+// Configure marked if available
+window.addEventListener('load', () => {
+  if (window.marked) {
+    const renderer = new marked.Renderer();
+    renderer.code = (code, lang) => {
+      const l = lang || 'text';
+      let highlighted = escHtml(code);
+      if (window.hljs) {
         try {
-          await memoryAPI.delete(mem.id);
-          item.remove();
-          if (memoryList.children.length === 0) {
-            memoryList.innerHTML = '<p class="sidebar-empty">No memories saved yet.</p>';
-          }
-        } catch {
-          showToast('Could not delete memory.', 'error');
-        }
-      });
-
-      memoryList.appendChild(item);
-    }
-  } catch {
-    showToast('Could not load memories.', 'error');
+          highlighted = window.hljs.getLanguage(l)
+            ? window.hljs.highlight(code, { language: l, ignoreIllegals: true }).value
+            : window.hljs.highlightAuto(code).value;
+        } catch(e) {}
+      }
+      return `<div class="code-block" data-lang="${escHtml(l)}"><div class="code-header"><span class="code-lang">${escHtml(l)}</span><button class="code-copy-btn" data-code="${escHtml(code)}"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> Copy</button></div><pre class="code-pre"><code class="hljs">${highlighted}</code></pre></div>`;
+    };
+    renderer.codespan = code => `<code class="inline-code">${escHtml(code)}</code>`;
+    marked.setOptions({ renderer, gfm: true, breaks: true });
   }
-}
-
-memoryAddBtn.addEventListener('click', addMemory);
-memoryAddInput.addEventListener('keydown', (e) => {
-  if (e.key === 'Enter') addMemory();
 });
 
-async function addMemory() {
-  const content = memoryAddInput.value.trim();
-  if (!content) return;
-
-  memoryAddBtn.disabled = true;
-  try {
-    await memoryAPI.add(content);
-    memoryAddInput.value = '';
-    await refreshMemoryList();
-    showToast('Memory saved.', 'success', 2000);
-  } catch {
-    showToast('Could not save memory.', 'error');
-  } finally {
-    memoryAddBtn.disabled = false;
-  }
-}
-
-// ── Helpers ──────────────────────────────────────────────────────────
-
-function _escHtml(str) {
-  if (typeof str !== 'string') return '';
-  return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-}
-
-// ── Start ────────────────────────────────────────────────────────────
-
-boot().catch(err => {
-  console.error('[sia] boot failed', err);
-  document.getElementById('app-shell').classList.add('ready');
-});
+boot();
 </script>
-
 </body>
 </html>
