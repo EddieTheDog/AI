@@ -128,14 +128,20 @@ let _convList       = [];
 async function boot() {
   try {
     const r = await fetch(API + '/auth/me', { credentials: 'include' });
-    const d = await r.json();
-    _user = d.user;
-  } catch(e) {}
+    if (r.ok) {
+      const d = await r.json();
+      _user = d.user || null;
+    }
+  } catch(e) {
+    // API unreachable - show login
+  }
 
   if (!_user) {
     const currentPath = location.pathname;
-    const isRoot = currentPath === '/' || currentPath === '/login' || currentPath === '/new';
-    location.href = isRoot ? '/login' : '/login?next=' + encodeURIComponent(currentPath);
+    const isLoginPage = currentPath === '/login' || currentPath.startsWith('/login');
+    if (!isLoginPage) {
+      location.href = '/login';
+    }
     return;
   }
 
