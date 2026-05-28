@@ -1,563 +1,594 @@
-<!-- src/pages/op.html -->
+<!-- src/index.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="SIA — Your intelligent assistant." />
+  <meta name="theme-color" content="#0d0d0f" />
   <meta name="robots" content="noindex, nofollow" />
-  <title>Operator — SIA</title>
+  <title>SIA</title>
+
+  <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+
+  <!-- Highlight.js -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css" />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js" defer></script>
+
+  <!-- Marked.js -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/9.1.6/marked.min.js" defer></script>
+
+  <!-- CSS -->
   <link rel="stylesheet" href="/css/base.css" />
+  <link rel="stylesheet" href="/css/layout.css" />
+  <link rel="stylesheet" href="/css/messages.css" />
   <link rel="stylesheet" href="/css/components.css" />
+
   <style>
-    .op-shell{display:flex;height:100dvh;overflow:hidden}
-    .op-nav{width:220px;flex-shrink:0;background:var(--bg-2);border-right:1px solid var(--border-soft);display:flex;flex-direction:column;padding:var(--space-4) var(--space-2);gap:var(--space-1)}
-    .op-logo{display:flex;align-items:center;gap:var(--space-2);padding:var(--space-2) var(--space-3);margin-bottom:var(--space-4)}
-    .op-logo-mark{width:28px;height:28px;background:var(--error);border-radius:var(--radius-md);display:flex;align-items:center;justify-content:center}
-    .op-logo-text{font-size:var(--text-md);font-weight:var(--weight-semibold);color:var(--text)}
-    .op-logo-sub{font-size:var(--text-xs);color:var(--text-muted);letter-spacing:.05em;margin-top:1px}
-    .nav-item{display:flex;align-items:center;gap:var(--space-2);padding:var(--space-2) var(--space-3);border-radius:var(--radius-md);font-size:var(--text-sm);color:var(--text-secondary);cursor:pointer;text-decoration:none;transition:background var(--duration-fast),color var(--duration-fast)}
-    .nav-item:hover{background:var(--surface);color:var(--text)}
-    .nav-item.active{background:var(--surface-2);color:var(--text)}
-    .nav-badge{margin-left:auto;background:var(--error);color:white;font-size:10px;font-weight:600;padding:1px 6px;border-radius:var(--radius-full);min-width:18px;text-align:center}
-    .op-nav-footer{margin-top:auto;padding-top:var(--space-4);border-top:1px solid var(--border-soft)}
-    .op-main{flex:1;overflow:hidden;display:flex;flex-direction:column}
-    .op-topbar{height:var(--header-height);display:flex;align-items:center;padding:0 var(--space-6);border-bottom:1px solid var(--border-soft);gap:var(--space-4);flex-shrink:0;background:var(--bg)}
-    .op-topbar-title{font-size:var(--text-md);font-weight:var(--weight-semibold);flex:1}
-    .op-content{flex:1;overflow-y:auto;padding:var(--space-6)}
-    .op-panel{display:none}
-    .op-panel.active{display:block}
-    .stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:var(--space-4);margin-bottom:var(--space-6)}
-    .stat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:var(--space-4) var(--space-5)}
-    .stat-label{font-size:var(--text-xs);color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:var(--space-1)}
-    .stat-value{font-size:1.8rem;font-weight:var(--weight-semibold);color:var(--text);line-height:1}
-    .stat-sub{font-size:var(--text-xs);color:var(--text-muted);margin-top:var(--space-1)}
-    .section-title{font-size:var(--text-base);font-weight:var(--weight-semibold);margin-bottom:var(--space-3);color:var(--text)}
-    .data-table{width:100%;border-collapse:collapse;font-size:var(--text-sm)}
-    .data-table th{text-align:left;padding:var(--space-2) var(--space-3);border-bottom:1px solid var(--border);color:var(--text-muted);font-weight:var(--weight-medium);font-size:var(--text-xs);text-transform:uppercase;letter-spacing:.05em;white-space:nowrap}
-    .data-table td{padding:var(--space-3) var(--space-3);border-bottom:1px solid var(--border-soft);color:var(--text-secondary);vertical-align:middle}
-    .data-table tr:hover td{background:var(--surface)}
-    .data-table tr:last-child td{border-bottom:none}
-    .table-wrap{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;margin-bottom:var(--space-6)}
-    .presence-dot{width:8px;height:8px;border-radius:50%;display:inline-block;margin-right:6px}
-    .presence-dot.active{background:var(--success);box-shadow:0 0 6px var(--success)}
-    .presence-dot.away{background:var(--warning)}
-    .presence-dot.offline{background:var(--text-muted)}
-    .reply-shell{display:flex;height:100%;gap:var(--space-4)}
-    .conv-list-panel{width:280px;flex-shrink:0;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);overflow-y:auto;display:flex;flex-direction:column}
-    .conv-list-header{padding:var(--space-3) var(--space-4);border-bottom:1px solid var(--border-soft);font-size:var(--text-sm);font-weight:var(--weight-semibold);flex-shrink:0}
-    .conv-list-item{padding:var(--space-3) var(--space-4);cursor:pointer;border-bottom:1px solid var(--border-soft);transition:background var(--duration-fast)}
-    .conv-list-item:hover{background:var(--surface-2)}
-    .conv-list-item.active{background:var(--accent-dim);border-left:2px solid var(--accent)}
-    .conv-list-title{font-size:var(--text-sm);color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-    .conv-list-meta{font-size:var(--text-xs);color:var(--text-muted);margin-top:2px}
-    .pending-badge{background:var(--error);color:white;font-size:10px;padding:1px 5px;border-radius:var(--radius-full);margin-left:6px}
-    .msg-view-panel{flex:1;display:flex;flex-direction:column;min-width:0;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden}
-    .msg-view-header{padding:var(--space-3) var(--space-4);border-bottom:1px solid var(--border-soft);display:flex;align-items:center;gap:var(--space-3);flex-shrink:0}
-    .msg-view-title{font-size:var(--text-sm);font-weight:var(--weight-semibold);flex:1}
-    .msg-view-scroll{flex:1;overflow-y:auto;padding:var(--space-4);display:flex;flex-direction:column;gap:var(--space-3)}
-    .op-msg{padding:var(--space-3) var(--space-4);border-radius:var(--radius-lg);font-size:var(--text-sm);line-height:var(--leading-relaxed)}
-    .op-msg-user{background:var(--surface-2);color:var(--text)}
-    .op-msg-assistant{background:var(--accent-dim);border:1px solid rgba(108,99,255,.2);color:var(--text)}
-    .op-msg-pending{background:rgba(251,191,36,.1);border:1px solid rgba(251,191,36,.25);color:var(--text);font-style:italic}
-    .op-msg-meta{font-size:var(--text-xs);color:var(--text-muted);margin-top:var(--space-1);display:flex;align-items:center;gap:var(--space-3);flex-wrap:wrap}
-    .reply-composer{border-top:1px solid var(--border-soft);padding:var(--space-4);flex-shrink:0;display:flex;flex-direction:column;gap:var(--space-3)}
-    .composer-toolbar{display:flex;align-items:center;gap:var(--space-1);flex-wrap:wrap;padding-bottom:var(--space-2);border-bottom:1px solid var(--border-soft)}
-    .toolbar-btn{display:flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:var(--radius-sm);font-size:var(--text-xs);color:var(--text-muted);transition:color var(--duration-fast),background var(--duration-fast);font-family:var(--font-mono)}
-    .toolbar-btn:hover{background:var(--surface-2);color:var(--text)}
-    .composer-tabs{display:flex;gap:var(--space-2);margin-bottom:var(--space-2)}
-    .composer-tab{font-size:var(--text-xs);padding:var(--space-1) var(--space-3);border-radius:var(--radius-sm);cursor:pointer;color:var(--text-muted);background:var(--surface-2);transition:background var(--duration-fast),color var(--duration-fast)}
-    .composer-tab.active{background:var(--accent);color:white}
-    .composer-textarea{width:100%;min-height:120px;max-height:300px;background:var(--surface-2);border:1px solid var(--border);border-radius:var(--radius-md);padding:var(--space-3);font-size:var(--text-sm);color:var(--text);font-family:var(--font-mono);resize:vertical;line-height:1.6}
-    .composer-textarea:focus{border-color:var(--accent)}
-    .composer-preview{display:none;min-height:120px;max-height:300px;overflow-y:auto;background:var(--surface-2);border:1px solid var(--border);border-radius:var(--radius-md);padding:var(--space-3);font-size:var(--text-sm);color:var(--text);line-height:var(--leading-relaxed)}
-    .composer-preview.visible{display:block}
-    .composer-footer{display:flex;align-items:center;gap:var(--space-2);justify-content:space-between}
-    .stream-indicator{display:none;align-items:center;gap:var(--space-2);font-size:var(--text-xs);color:var(--warning)}
-    .stream-indicator.active{display:flex}
-    .notes-sidebar{width:260px;flex-shrink:0;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);display:flex;flex-direction:column;overflow:hidden}
-    .notes-header{padding:var(--space-3) var(--space-4);border-bottom:1px solid var(--border-soft);font-size:var(--text-sm);font-weight:var(--weight-semibold)}
-    .notes-list{flex:1;overflow-y:auto;padding:var(--space-2);display:flex;flex-direction:column;gap:var(--space-2)}
-    .note-card{background:var(--surface-2);border-radius:var(--radius-md);padding:var(--space-3);font-size:var(--text-xs);color:var(--text-secondary)}
-    .note-card-tag{display:inline-block;background:var(--accent-dim);color:var(--accent);padding:1px 6px;border-radius:var(--radius-full);font-size:10px;margin-bottom:var(--space-1)}
-    .note-card-body{color:var(--text);line-height:var(--leading-relaxed)}
-    .note-card-meta{color:var(--text-muted);margin-top:var(--space-1)}
-    .notes-add{padding:var(--space-3);border-top:1px solid var(--border-soft);display:flex;flex-direction:column;gap:var(--space-2)}
-    .notes-add textarea{width:100%;background:var(--surface-2);border:1px solid var(--border);border-radius:var(--radius-md);padding:var(--space-2);font-size:var(--text-xs);color:var(--text);resize:none;height:64px}
-    .op-login{display:flex;align-items:center;justify-content:center;min-height:100dvh;background:var(--bg);padding:var(--space-4)}
-    .op-login-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-xl);padding:var(--space-8);width:100%;max-width:380px;box-shadow:var(--shadow-xl)}
-    .op-error{display:none;background:rgba(248,113,113,.1);border:1px solid rgba(248,113,113,.25);border-radius:var(--radius-md);padding:var(--space-3);font-size:var(--text-sm);color:var(--error);margin-bottom:var(--space-4)}
-    .op-error.visible{display:block}
-    .citation-row{display:flex;gap:var(--space-2);margin-bottom:var(--space-2)}
-    @media(max-width:900px){.stats-grid{grid-template-columns:repeat(2,1fr)}.reply-shell{flex-direction:column}.conv-list-panel{width:100%;max-height:200px}.notes-sidebar{display:none}}
+    /* Page-specific overrides */
+    .app-shell { opacity: 0; transition: opacity 0.2s ease; }
+    .app-shell.ready { opacity: 1; }
   </style>
 </head>
 <body>
 
-<div id="op-login-screen" class="op-login">
-  <div class="op-login-card">
-    <div style="display:flex;align-items:center;gap:var(--space-2);margin-bottom:var(--space-6);">
-      <div class="op-logo-mark"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
-      <div><div style="font-size:var(--text-md);font-weight:var(--weight-semibold)">SIA Operator</div><div style="font-size:var(--text-xs);color:var(--text-muted)">Admin access only</div></div>
+<!-- Sidebar overlay (mobile) -->
+<div class="sidebar-overlay" id="sidebar-overlay" aria-hidden="true"></div>
+
+<div class="app-shell" id="app-shell">
+
+  <!-- ── Sidebar ──────────────────────────────────────────────────── -->
+  <aside class="sidebar" id="sidebar" aria-label="Conversations">
+
+    <div class="sidebar-header">
+      <a href="/" class="sidebar-logo" aria-label="SIA home">
+        <div class="sidebar-logo-mark" aria-hidden="true">
+          <svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M4 11 Q8 4 12 11" stroke="white" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+            <circle cx="8" cy="6.5" r="1.5" fill="white"/>
+          </svg>
+        </div>
+        SIA
+      </a>
+
+      <button class="new-chat-btn" id="new-chat-btn" title="New chat" aria-label="New chat">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <path d="M12 5v14M5 12h14"/>
+        </svg>
+      </button>
     </div>
-    <div class="op-error" id="op-error"></div>
-    <div id="op-login-form">
-      <div class="form-group"><label class="form-label">Email</label><input class="form-input" id="op-email" type="email" placeholder="admin@example.com" /></div>
-      <div class="form-group"><label class="form-label">Password</label><input class="form-input" id="op-password" type="password" placeholder="••••••••••••" /></div>
-      <button class="btn btn-primary" id="op-login-btn" style="width:100%;margin-top:var(--space-2)">Sign in</button>
-      <div style="margin-top:var(--space-5);text-align:center;"><a href="#" id="op-show-register" style="font-size:var(--text-xs);color:var(--text-muted)">First time? Create admin account</a></div>
+
+    <nav class="sidebar-scroll" aria-label="Conversation history">
+      <div id="conversation-list">
+        <p class="sidebar-empty">No conversations yet.</p>
+      </div>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="sidebar-user" id="sidebar-user-btn" role="button" tabindex="0" aria-label="Account options">
+        <div class="sidebar-avatar" id="sidebar-avatar" aria-hidden="true">—</div>
+        <div class="sidebar-user-info">
+          <div class="sidebar-user-name truncate" id="sidebar-user-name">Loading...</div>
+          <div class="sidebar-user-email truncate" id="sidebar-user-email"></div>
+        </div>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <polyline points="6 9 12 15 18 9"/>
+        </svg>
+      </div>
     </div>
-    <div id="op-register-form" style="display:none">
-      <div class="form-group"><label class="form-label">Name</label><input class="form-input" id="op-reg-name" type="text" placeholder="Admin name" /></div>
-      <div class="form-group"><label class="form-label">Email</label><input class="form-input" id="op-reg-email" type="email" /></div>
-      <div class="form-group"><label class="form-label">Password (min 12)</label><input class="form-input" id="op-reg-password" type="password" /></div>
-      <div class="form-group"><label class="form-label">Setup key <span style="color:var(--text-muted)">(additional admins)</span></label><input class="form-input" id="op-setup-key" type="text" /></div>
-      <button class="btn btn-primary" id="op-register-btn" style="width:100%;margin-top:var(--space-2)">Create account</button>
-      <div style="margin-top:var(--space-4);text-align:center;"><a href="#" id="op-show-login" style="font-size:var(--text-xs);color:var(--text-muted)">Back to sign in</a></div>
+
+  </aside>
+
+  <!-- ── Main ─────────────────────────────────────────────────────── -->
+  <main class="main" id="main">
+
+    <!-- Chat header -->
+    <header class="chat-header" id="chat-header">
+      <button class="sidebar-toggle" id="sidebar-toggle" aria-label="Toggle sidebar">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <line x1="3" y1="6" x2="21" y2="6"/>
+          <line x1="3" y1="12" x2="21" y2="12"/>
+          <line x1="3" y1="18" x2="21" y2="18"/>
+        </svg>
+      </button>
+
+      <span class="chat-header-title" id="chat-title"></span>
+
+      <button class="action-btn" id="memory-toggle-btn" title="Memory" aria-label="Toggle memory panel" style="width:34px;height:34px;border-radius:var(--radius-md);">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <path d="M12 2a7 7 0 0 1 7 7c0 3.5-2 6-4 7.4V18a1 1 0 0 1-1 1h-4a1 1 0 0 1-1-1v-1.6C7 15 5 12.5 5 9a7 7 0 0 1 7-7z"/>
+          <line x1="9" y1="22" x2="15" y2="22"/>
+          <line x1="9.5" y1="18" x2="14.5" y2="18"/>
+        </svg>
+      </button>
+    </header>
+
+    <!-- Messages -->
+    <section class="messages-area" id="messages-area" aria-label="Messages" aria-live="polite">
+      <div class="messages-container" id="messages-container">
+
+        <!-- Empty state (shown when no active conversation) -->
+        <div class="empty-state" id="empty-state">
+          <div class="empty-logo" aria-hidden="true">
+            <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+              <path d="M6 18 Q14 6 22 18" stroke="var(--accent)" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+              <circle cx="14" cy="11" r="2.8" fill="var(--accent)"/>
+            </svg>
+          </div>
+          <h1 class="empty-title">How can I help?</h1>
+          <p class="empty-subtitle">Ask me anything — I'm here to assist.</p>
+          <div class="empty-prompts" aria-label="Suggested prompts">
+            <button class="empty-prompt-btn" data-prompt="Explain how large language models work">Explain how large language models work</button>
+            <button class="empty-prompt-btn" data-prompt="Write a Python script to scrape a website">Write a Python script to scrape a website</button>
+            <button class="empty-prompt-btn" data-prompt="What are the best practices for REST API design?">Best practices for REST API design</button>
+            <button class="empty-prompt-btn" data-prompt="Summarize the key ideas behind stoicism">Key ideas behind stoicism</button>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- Input area -->
+    <footer class="input-area" aria-label="Message input">
+      <div class="input-wrap">
+
+        <div class="input-box" id="input-box">
+
+          <!-- Image preview (shown after upload) -->
+          <div class="input-image-preview" id="input-image-preview" aria-label="Attached image">
+            <img class="input-image-thumb" id="input-image-thumb" src="" alt="Attached image preview" />
+            <span id="input-image-name" style="font-size:var(--text-xs);color:var(--text-muted);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"></span>
+            <button class="input-image-remove" id="input-image-remove" aria-label="Remove image">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+              </svg>
+            </button>
+          </div>
+
+          <!-- Upload progress -->
+          <div class="upload-progress-bar" id="upload-progress-bar">
+            <div class="upload-progress-fill" id="upload-progress-fill"></div>
+          </div>
+
+          <div class="input-row">
+            <textarea
+              id="message-input"
+              placeholder="Message SIA..."
+              rows="1"
+              autocomplete="off"
+              spellcheck="true"
+              aria-label="Message input"
+              aria-multiline="true"
+            ></textarea>
+
+            <div class="input-actions">
+              <!-- Image upload -->
+              <button class="input-icon-btn" id="image-upload-btn" title="Attach image" aria-label="Attach image">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                  <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                  <circle cx="8.5" cy="8.5" r="1.5"/>
+                  <polyline points="21 15 16 10 5 21"/>
+                </svg>
+              </button>
+
+              <!-- Cancel (shown while waiting) -->
+              <button id="cancel-btn" aria-label="Cancel response" title="Cancel">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                  <rect x="3" y="3" width="18" height="18" rx="2"/>
+                </svg>
+              </button>
+
+              <!-- Send -->
+              <button id="send-btn" aria-label="Send message" title="Send">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="12" y1="19" x2="12" y2="5"/>
+                  <polyline points="5 12 12 5 19 12"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <p class="input-hint">Press <kbd style="font-family:var(--font-mono);font-size:0.7rem;background:var(--surface-2);padding:1px 5px;border-radius:4px;border:1px solid var(--border);">Shift+Enter</kbd> for new line &nbsp;·&nbsp; Click Send to submit</p>
+      </div>
+    </footer>
+
+  </main>
+
+  <!-- ── Memory Panel ──────────────────────────────────────────────── -->
+  <aside class="memory-panel" id="memory-panel" aria-label="Memory" aria-hidden="true">
+    <div class="memory-panel-header">
+      <h2 class="memory-panel-title">Memory</h2>
+      <button class="action-btn" id="memory-close-btn" aria-label="Close memory panel" style="width:28px;height:28px;border-radius:var(--radius-md);">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
     </div>
-  </div>
+
+    <div class="memory-list" id="memory-list" aria-label="Saved memories">
+      <p class="sidebar-empty">No memories saved yet.</p>
+    </div>
+
+    <div class="memory-add">
+      <input
+        class="memory-add-input"
+        id="memory-add-input"
+        type="text"
+        placeholder="Add a memory..."
+        aria-label="Add memory"
+        maxlength="500"
+      />
+      <button class="btn btn-primary btn-sm" id="memory-add-btn">Save</button>
+    </div>
+  </aside>
+
 </div>
 
-<div id="op-shell" class="op-shell" style="display:none">
-  <nav class="op-nav">
-    <div class="op-logo">
-      <div class="op-logo-mark"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
-      <div><div class="op-logo-text">Operator</div><div class="op-logo-sub">SIA ADMIN</div></div>
-    </div>
-    <a class="nav-item active" data-panel="dashboard" href="#"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>Dashboard</a>
-    <a class="nav-item" data-panel="reply" href="#"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Reply Queue<span class="nav-badge" id="queue-badge" style="display:none">0</span></a>
-    <a class="nav-item" data-panel="users" href="#"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>Users</a>
-    <a class="nav-item" data-panel="analytics" href="#"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>Analytics</a>
-    <a class="nav-item" data-panel="expiry" href="#"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>Expiring Chats</a>
-    <a class="nav-item" data-panel="settings" href="#"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>Settings</a>
-    <div class="op-nav-footer">
-      <div class="nav-item" id="op-logout-btn"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>Sign out</div>
-      <div style="padding:var(--space-2) var(--space-3);font-size:var(--text-xs);color:var(--text-muted)" id="op-admin-name"></div>
-    </div>
-  </nav>
+<!-- Hidden file input for image upload -->
+<input type="file" id="image-file-input" accept="image/jpeg,image/png,image/webp,image/gif" style="display:none;" aria-hidden="true" />
 
-  <div class="op-main">
-    <div class="op-topbar">
-      <span class="op-topbar-title" id="op-panel-title">Dashboard</span>
-      <span style="font-size:var(--text-xs);color:var(--text-muted)">Auto-refreshing every 15s</span>
-      <button class="btn btn-secondary btn-sm" id="op-refresh-btn">Refresh</button>
-    </div>
-    <div class="op-content" id="op-content">
-
-      <!-- Dashboard -->
-      <div class="op-panel active" id="panel-dashboard">
-        <div class="stats-grid">
-          <div class="stat-card"><div class="stat-label">Active Users</div><div class="stat-value" id="stat-active">—</div><div class="stat-sub">Last 5 min</div></div>
-          <div class="stat-card"><div class="stat-label">Pending Replies</div><div class="stat-value" id="stat-pending" style="color:var(--warning)">—</div><div class="stat-sub">Awaiting response</div></div>
-          <div class="stat-card"><div class="stat-label">Total Conversations</div><div class="stat-value" id="stat-convs">—</div><div class="stat-sub">All time</div></div>
-          <div class="stat-card"><div class="stat-label">Reactions (24h)</div><div class="stat-value" id="stat-reactions">—</div><div class="stat-sub" id="stat-reactions-sub"></div></div>
-        </div>
-        <div class="section-title">Live Users</div>
-        <div class="table-wrap"><table class="data-table"><thead><tr><th>Status</th><th>User</th><th>Conversation</th><th>Typing</th><th>Last seen</th><th>Action</th></tr></thead><tbody id="live-users-tbody"></tbody></table></div>
-        <div class="section-title">Pending Queue</div>
-        <div class="table-wrap"><table class="data-table"><thead><tr><th>User</th><th>Conversation</th><th>Waiting since</th><th>Assigned</th><th>Action</th></tr></thead><tbody id="queue-tbody"></tbody></table></div>
-      </div>
-
-      <!-- Reply -->
-      <div class="op-panel" id="panel-reply" style="height:calc(100dvh - var(--header-height) - 3rem);overflow:hidden">
-        <div class="reply-shell" style="height:100%">
-          <div class="conv-list-panel">
-            <div class="conv-list-header">Conversations</div>
-            <div id="op-conv-list" style="flex:1;overflow-y:auto"></div>
-          </div>
-          <div class="msg-view-panel">
-            <div class="msg-view-header">
-              <span class="msg-view-title" id="msg-view-title">Select a conversation</span>
-              <button class="btn btn-secondary btn-sm" id="assign-btn">Claim</button>
-              <button class="btn btn-secondary btn-sm" id="unassign-btn" style="display:none">Release</button>
-            </div>
-            <div class="msg-view-scroll" id="msg-view-scroll"></div>
-            <div class="reply-composer" id="reply-composer">
-              <div class="composer-tabs">
-                <div class="composer-tab active" data-tab="write">Write</div>
-                <div class="composer-tab" data-tab="preview">Preview</div>
-                <div class="composer-tab" data-tab="stream">Stream mode</div>
-              </div>
-              <div class="composer-toolbar">
-                <button class="toolbar-btn" data-md="**" title="Bold"><b>B</b></button>
-                <button class="toolbar-btn" data-md="_" title="Italic"><i>I</i></button>
-                <button class="toolbar-btn" data-md="## " title="Heading">H</button>
-                <button class="toolbar-btn" data-md="`" title="Code">`</button>
-                <button class="toolbar-btn" data-md="```\n" title="Code block">{ }</button>
-                <button class="toolbar-btn" data-md="> " title="Quote">"</button>
-                <button class="toolbar-btn" data-md="- " title="List">•</button>
-              </div>
-              <textarea class="composer-textarea" id="composer-textarea" placeholder="Type a response... Markdown supported"></textarea>
-              <div class="composer-preview" id="composer-preview"></div>
-              <div>
-                <div style="font-size:var(--text-xs);color:var(--text-muted);margin-bottom:var(--space-1);cursor:pointer" id="toggle-citations">+ Add citations</div>
-                <div id="citations-editor" style="display:none;flex-direction:column;gap:var(--space-2)">
-                  <div id="citation-rows"></div>
-                  <span style="font-size:var(--text-xs);color:var(--accent);cursor:pointer" id="add-citation-row">+ Add source</span>
-                </div>
-              </div>
-              <div class="composer-footer">
-                <div class="stream-indicator" id="stream-indicator"><span class="presence-dot active"></span>Streaming...</div>
-                <div style="display:flex;gap:var(--space-2)">
-                  <button class="btn btn-secondary btn-sm" id="stream-chunk-btn" style="display:none">Send chunk</button>
-                  <button class="btn btn-danger btn-sm" id="stream-finish-btn" style="display:none">Finish stream</button>
-                  <button class="btn btn-primary" id="send-reply-btn" disabled>Send reply</button>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div class="notes-sidebar">
-            <div class="notes-header">Internal Notes</div>
-            <div class="notes-list" id="notes-list"></div>
-            <div class="notes-add">
-              <textarea id="note-textarea" placeholder="Add a note..."></textarea>
-              <div style="display:flex;gap:var(--space-2)">
-                <input class="form-input" id="note-tag" placeholder="Tag" style="font-size:var(--text-xs);padding:var(--space-1) var(--space-2)" />
-                <button class="btn btn-secondary btn-sm" id="save-note-btn">Save</button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Users -->
-      <div class="op-panel" id="panel-users">
-        <div class="section-title">All Users</div>
-        <div class="table-wrap"><table class="data-table"><thead><tr><th>Name</th><th>Email</th><th>Status</th><th>Last seen</th><th>Joined</th></tr></thead><tbody id="users-tbody"></tbody></table></div>
-      </div>
-
-      <!-- Analytics -->
-      <div class="op-panel" id="panel-analytics">
-        <div class="stats-grid" style="grid-template-columns:repeat(3,1fr)">
-          <div class="stat-card"><div class="stat-label">Total Sessions</div><div class="stat-value" id="an-sessions">—</div></div>
-          <div class="stat-card"><div class="stat-label">Thumbs Up</div><div class="stat-value" id="an-up" style="color:var(--success)">—</div></div>
-          <div class="stat-card"><div class="stat-label">Thumbs Down</div><div class="stat-value" id="an-down" style="color:var(--error)">—</div></div>
-        </div>
-        <div class="section-title">Messages Per Day (30 days)</div>
-        <div class="table-wrap"><table class="data-table"><thead><tr><th>Date</th><th>Messages</th></tr></thead><tbody id="analytics-tbody"></tbody></table></div>
-      </div>
-
-      <!-- Expiry -->
-      <div class="op-panel" id="panel-expiry">
-        <div class="section-title">Expiring Soon</div>
-        <div class="table-wrap"><table class="data-table"><thead><tr><th>User</th><th>Conversation</th><th>Expires</th><th>Action</th></tr></thead><tbody id="expiry-tbody"></tbody></table></div>
-        <div class="section-title">Recently Expired</div>
-        <div class="table-wrap"><table class="data-table"><thead><tr><th>User</th><th>Conversation</th><th>Expired</th></tr></thead><tbody id="expired-tbody"></tbody></table></div>
-      </div>
-
-      <!-- Settings -->
-      <div class="op-panel" id="panel-settings">
-        <div style="max-width:480px">
-          <div class="section-title">Platform Settings</div>
-          <div class="table-wrap" style="padding:var(--space-5)">
-            <div class="form-group"><label class="form-label">Chat expiry (days)</label><input class="form-input" id="set-expiry-days" type="number" min="1" max="365" /></div>
-            <div class="form-group"><label class="form-label">Warning before expiry (days)</label><input class="form-input" id="set-warn-days" type="number" min="1" max="30" /></div>
-            <div class="form-group"><label class="form-label">Max message length (chars)</label><input class="form-input" id="set-max-msg" type="number" /></div>
-            <div class="form-group" style="flex-direction:row;align-items:center;gap:var(--space-3)"><label class="toggle"><input type="checkbox" id="set-reg-enabled" /><span class="toggle-track"></span></label><span class="form-label" style="margin:0">Allow new user registrations</span></div>
-            <button class="btn btn-primary" id="save-settings-btn">Save settings</button>
-          </div>
-        </div>
-      </div>
-
-    </div>
-  </div>
-</div>
-
+<!-- ── Scripts ─────────────────────────────────────────────────────── -->
 <script type="module">
-const API='/api/admin';
-let _admin=null,_activeConvId=null,_streamMode=false,_citations=[];
+import { initAuth, currentUser, logout, isAuthenticated } from '/js/auth.js';
+import { initRenderer }                                    from '/js/renderer.js';
+import { loadConversation, loadConversationList,
+         sendMessage, cancelPending, onUserTyping,
+         createNewConversation, getActiveConversationId }  from '/js/chat.js';
+import { uploadImage }                                     from '/js/api.js';
+import { memory as memoryAPI }                             from '/js/api.js';
+import { initAutoExpand, initScrollTracking,
+         resetScrollTracking, showToast,
+         openDropdown, scrollToBottom }                    from '/js/ui.js';
 
-async function boot(){
-  const r=await fetch(`${API}/me`,{credentials:'include'});
-  const d=await r.json();
-  _admin=d.admin;
-  if(_admin)showDashboard();
+// ── Boot ────────────────────────────────────────────────────────────
+
+async function boot() {
+  initRenderer();
+
+  const user = await initAuth();
+
+  if (!user) {
+    window.location.href = `/?next=${encodeURIComponent(window.location.pathname)}`;
+    return;
+  }
+
+  // Populate user info in sidebar
+  document.getElementById('sidebar-user-name').textContent = user.display_name || user.email;
+  document.getElementById('sidebar-user-email').textContent = user.email;
+  const initials = (user.display_name || user.email).slice(0, 2).toUpperCase();
+  document.getElementById('sidebar-avatar').textContent = initials;
+
+  // Load conversation list
+  await loadConversationList();
+
+  // Route based on URL
+  const path = window.location.pathname;
+  if (path.startsWith('/c/')) {
+    const id = path.slice(3);
+    if (id) {
+      document.getElementById('empty-state').style.display = 'none';
+      await loadConversation(id);
+    }
+  }
+
+  // Ready
+  document.getElementById('app-shell').classList.add('ready');
+  document.getElementById('message-input').focus();
 }
 
-function showDashboard(){
-  document.getElementById('op-login-screen').style.display='none';
-  document.getElementById('op-shell').style.display='flex';
-  document.getElementById('op-admin-name').textContent=_admin.display_name||_admin.email;
-  loadDashboard();
-  setInterval(loadDashboard,15000);
-}
+// ── Routing (SPA popstate) ───────────────────────────────────────────
 
-document.getElementById('op-login-btn').addEventListener('click',async()=>{
-  const email=document.getElementById('op-email').value.trim();
-  const password=document.getElementById('op-password').value;
-  clearErr();
-  try{
-    const r=await fetch(`${API}/login`,{method:'POST',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,password})});
-    const d=await r.json();
-    if(!r.ok)throw new Error(d.error);
-    _admin=d.admin;showDashboard();
-  }catch(e){showErr(e.message);}
-});
+window.addEventListener('popstate', async () => {
+  const path = window.location.pathname;
+  resetScrollTracking();
 
-document.getElementById('op-register-btn').addEventListener('click',async()=>{
-  const name=document.getElementById('op-reg-name').value.trim();
-  const email=document.getElementById('op-reg-email').value.trim();
-  const password=document.getElementById('op-reg-password').value;
-  const setup_key=document.getElementById('op-setup-key').value.trim();
-  clearErr();
-  try{
-    const r=await fetch(`${API}/register`,{method:'POST',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,password,display_name:name,setup_key})});
-    const d=await r.json();
-    if(!r.ok)throw new Error(d.error);
-    _admin=d.admin;showDashboard();
-  }catch(e){showErr(e.message);}
-});
+  if (path === '/new' || path === '/') {
+    document.getElementById('empty-state').style.display = '';
+    document.getElementById('messages-container').innerHTML = '';
+    document.getElementById('messages-container').appendChild(
+      document.getElementById('empty-state')
+    );
+    document.title = 'SIA';
+    document.getElementById('chat-title').textContent = '';
+    return;
+  }
 
-document.getElementById('op-logout-btn').addEventListener('click',async()=>{await fetch(`${API}/logout`,{method:'POST',credentials:'include'});location.reload();});
-document.getElementById('op-show-register').addEventListener('click',e=>{e.preventDefault();document.getElementById('op-login-form').style.display='none';document.getElementById('op-register-form').style.display='block';});
-document.getElementById('op-show-login').addEventListener('click',e=>{e.preventDefault();document.getElementById('op-register-form').style.display='none';document.getElementById('op-login-form').style.display='block';});
-document.getElementById('op-refresh-btn').addEventListener('click',loadDashboard);
-
-document.querySelectorAll('.nav-item[data-panel]').forEach(el=>{
-  el.addEventListener('click',e=>{
-    e.preventDefault();
-    const p=el.dataset.panel;
-    document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
-    el.classList.add('active');
-    document.querySelectorAll('.op-panel').forEach(pp=>pp.classList.remove('active'));
-    document.getElementById(`panel-${p}`).classList.add('active');
-    document.getElementById('op-panel-title').textContent=el.textContent.trim();
-    if(p==='reply')loadConversations();
-    if(p==='users')loadUsers();
-    if(p==='analytics')loadAnalytics();
-    if(p==='expiry')loadExpiry();
-    if(p==='settings')loadSettings();
-  });
-});
-
-async function loadDashboard(){
-  try{
-    const r=await fetch(`${API}/dashboard`,{credentials:'include'});
-    const d=await r.json();const s=d.stats;
-    document.getElementById('stat-active').textContent=s.active_users;
-    document.getElementById('stat-pending').textContent=s.pending_msgs;
-    document.getElementById('stat-convs').textContent=s.total_convs;
-    document.getElementById('stat-reactions').textContent=(s.reactions_24h.up||0)+(s.reactions_24h.down||0);
-    document.getElementById('stat-reactions-sub').textContent=`${s.reactions_24h.up||0} up · ${s.reactions_24h.down||0} down`;
-    const b=document.getElementById('queue-badge');
-    if(s.pending_msgs>0){b.textContent=s.pending_msgs;b.style.display='inline';}else b.style.display='none';
-    document.getElementById('live-users-tbody').innerHTML=d.live_users.length===0
-      ?'<tr><td colspan="6" style="color:var(--text-muted);text-align:center">No active users</td></tr>'
-      :d.live_users.map(u=>`<tr><td><span class="presence-dot ${u.state}"></span>${u.state}</td><td>${_e(u.display_name||u.email)}</td><td>${_e(u.conv_title||'—')}</td><td>${u.is_typing?'<span class="badge badge-warning">Typing</span>':'—'}</td><td>${_rt(u.last_seen)}</td><td><button class="btn btn-secondary btn-sm" onclick="openConvReply('${u.conversation_id}')">View</button></td></tr>`).join('');
-    document.getElementById('queue-tbody').innerHTML=d.queue.length===0
-      ?'<tr><td colspan="5" style="color:var(--text-muted);text-align:center">No pending replies</td></tr>'
-      :d.queue.map(q=>`<tr><td>${_e(q.user_name||q.user_email)}</td><td>${_e(q.conv_title)}</td><td>${_rt(q.created_at)}</td><td>${q.assigned_admin_id?'<span class="badge badge-accent">Assigned</span>':'<span class="badge badge-muted">Free</span>'}</td><td><button class="btn btn-primary btn-sm" onclick="openConvReply('${q.conversation_id}')">Reply</button></td></tr>`).join('');
-  }catch(e){console.error(e);}
-}
-
-async function loadConversations(){
-  const r=await fetch(`${API}/conversations`,{credentials:'include'});
-  const d=await r.json();
-  document.getElementById('op-conv-list').innerHTML=(d.conversations??[]).map(c=>`
-    <div class="conv-list-item${c.id===_activeConvId?' active':''}" data-id="${c.id}" onclick="selectConv('${c.id}')">
-      <div class="conv-list-title">${_e(c.title)}${c.pending_count>0?`<span class="pending-badge">${c.pending_count}</span>`:''}</div>
-      <div class="conv-list-meta">${_e(c.user_name||c.user_email)} · ${_rt(c.updated_at)}</div>
-    </div>`).join('');
-}
-
-window.selectConv=async function(id){
-  _activeConvId=id;_citations=[];
-  document.querySelectorAll('.conv-list-item').forEach(el=>el.classList.toggle('active',el.dataset.id===id));
-  await loadConvMessages(id);await loadNotes(id);
-  document.getElementById('send-reply-btn').disabled=false;
-};
-
-window.openConvReply=async function(id){
-  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
-  document.querySelector('[data-panel="reply"]').classList.add('active');
-  document.querySelectorAll('.op-panel').forEach(p=>p.classList.remove('active'));
-  document.getElementById('panel-reply').classList.add('active');
-  document.getElementById('op-panel-title').textContent='Reply Queue';
-  await loadConversations();await selectConv(id);
-};
-
-async function loadConvMessages(id){
-  const r=await fetch(`${API}/conversations/${id}/messages`,{credentials:'include'});
-  const d=await r.json();
-  const scroll=document.getElementById('msg-view-scroll');
-  const msgs=d.messages??[];
-  scroll.innerHTML=msgs.map(m=>{
-    const cls=m.status==='pending'?'op-msg-pending':m.role==='user'?'op-msg-user':'op-msg-assistant';
-    const content=m.role==='assistant'&&window.marked?window.marked.parse(m.content||'(pending…)'):_e(m.content||'(pending…)');
-    const reacts=(m.reactions||[]).map(r=>`<span class="badge badge-${r.type==='up'?'success':'error'}">${r.type==='up'?'+1':'-1'} ${_e(r.email)}</span>`).join(' ');
-    return`<div class="op-msg ${cls}">${content}<div class="op-msg-meta"><span>${m.role==='user'?'User':'Assistant'}</span><span>${_rt(m.created_at)}</span>${m.status==='pending'?'<span class="badge badge-warning">Awaiting reply</span>':''}${reacts}${m.role==='assistant'&&m.status==='done'?`<button class="btn btn-ghost btn-sm" style="font-size:10px;padding:1px 6px" onclick="editMsg('${m.id}')">Edit</button>`:''}</div></div>`;
-  }).join('');
-  scroll.scrollTop=scroll.scrollHeight;
-  document.getElementById('msg-view-title').textContent=id;
-}
-
-document.getElementById('send-reply-btn').addEventListener('click',async()=>{
-  if(!_activeConvId)return;
-  const content=document.getElementById('composer-textarea').value.trim();
-  if(!content)return;
-  const btn=document.getElementById('send-reply-btn');
-  btn.disabled=true;btn.textContent='Sending...';
-  try{
-    const r=await fetch(`${API}/conversations/${_activeConvId}/reply`,{method:'POST',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify({content,citations:_citations})});
-    if(!r.ok){const d=await r.json();throw new Error(d.error);}
-    document.getElementById('composer-textarea').value='';
-    _citations=[];renderCitationRows();
-    await loadConvMessages(_activeConvId);await loadDashboard();
-  }catch(e){alert('Error: '+e.message);}
-  finally{btn.disabled=false;btn.textContent='Send reply';}
-});
-
-document.querySelectorAll('.composer-tab').forEach(tab=>{
-  tab.addEventListener('click',()=>{
-    document.querySelectorAll('.composer-tab').forEach(t=>t.classList.remove('active'));
-    tab.classList.add('active');
-    const t=tab.dataset.tab;_streamMode=t==='stream';
-    document.getElementById('composer-textarea').style.display=t==='preview'?'none':'block';
-    document.getElementById('composer-preview').classList.toggle('visible',t==='preview');
-    document.getElementById('stream-chunk-btn').style.display=_streamMode?'inline-flex':'none';
-    document.getElementById('stream-finish-btn').style.display=_streamMode?'inline-flex':'none';
-    document.getElementById('send-reply-btn').style.display=_streamMode?'none':'inline-flex';
-    if(t==='preview'){const md=document.getElementById('composer-textarea').value;document.getElementById('composer-preview').innerHTML=window.marked?window.marked.parse(md):md;}
-  });
-});
-
-document.getElementById('composer-textarea').addEventListener('input',()=>{
-  if(document.getElementById('composer-preview').classList.contains('visible')){
-    const md=document.getElementById('composer-textarea').value;
-    document.getElementById('composer-preview').innerHTML=window.marked?window.marked.parse(md):md;
+  if (path.startsWith('/c/')) {
+    const id = path.slice(3);
+    document.getElementById('empty-state').style.display = 'none';
+    await loadConversation(id);
   }
 });
 
-document.getElementById('stream-chunk-btn').addEventListener('click',async()=>{
-  if(!_activeConvId)return;
-  const chunk=document.getElementById('composer-textarea').value;if(!chunk)return;
-  await fetch(`${API}/conversations/${_activeConvId}/chunk`,{method:'POST',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify({chunk})});
-  document.getElementById('stream-indicator').classList.add('active');
-  document.getElementById('composer-textarea').value='';
+// ── Input ────────────────────────────────────────────────────────────
+
+const textarea   = document.getElementById('message-input');
+const sendBtn    = document.getElementById('send-btn');
+const cancelBtn  = document.getElementById('cancel-btn');
+const messagesArea = document.getElementById('messages-area');
+
+initAutoExpand(textarea);
+initScrollTracking(messagesArea);
+
+textarea.addEventListener('input', () => onUserTyping());
+
+// Enter = newline, Send button = submit
+textarea.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    // Do nothing — user must click Send
+    // (Shift+Enter naturally creates newline)
+  }
 });
 
-document.getElementById('stream-finish-btn').addEventListener('click',async()=>{
-  if(!_activeConvId)return;
-  const content=document.getElementById('composer-textarea').value;
-  await fetch(`${API}/conversations/${_activeConvId}/finish`,{method:'POST',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify({content,citations:_citations})});
-  document.getElementById('stream-indicator').classList.remove('active');
-  document.getElementById('composer-textarea').value='';_citations=[];renderCitationRows();
-  await loadConvMessages(_activeConvId);
+sendBtn.addEventListener('click', () => doSend());
+cancelBtn.addEventListener('click', () => cancelPending());
+
+async function doSend() {
+  const content = textarea.value;
+  if (!content.trim() && !_pendingImageMetaId) return;
+
+  const imageMetaId = _pendingImageMetaId;
+
+  // Clear input
+  textarea.value = '';
+  textarea.style.height = 'auto';
+  _clearImagePreview();
+
+  await sendMessage(content, imageMetaId);
+}
+
+// ── Image Upload ─────────────────────────────────────────────────────
+
+const imageUploadBtn  = document.getElementById('image-upload-btn');
+const imageFileInput  = document.getElementById('image-file-input');
+const imagePreview    = document.getElementById('input-image-preview');
+const imageThumb      = document.getElementById('input-image-thumb');
+const imageName       = document.getElementById('input-image-name');
+const imageRemove     = document.getElementById('input-image-remove');
+const progressBar     = document.getElementById('upload-progress-bar');
+const progressFill    = document.getElementById('upload-progress-fill');
+
+let _pendingImageMetaId = null;
+
+imageUploadBtn.addEventListener('click', () => imageFileInput.click());
+
+imageFileInput.addEventListener('change', async () => {
+  const file = imageFileInput.files[0];
+  if (!file) return;
+
+  // Validate
+  const MAX_MB = 10;
+  if (file.size > MAX_MB * 1024 * 1024) {
+    showToast(`Image must be under ${MAX_MB}MB.`, 'error');
+    imageFileInput.value = '';
+    return;
+  }
+
+  const allowed = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+  if (!allowed.includes(file.type)) {
+    showToast('Only JPEG, PNG, WebP, or GIF images allowed.', 'error');
+    imageFileInput.value = '';
+    return;
+  }
+
+  // Preview
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    imageThumb.src = e.target.result;
+    imageName.textContent = file.name;
+    imagePreview.classList.add('visible');
+  };
+  reader.readAsDataURL(file);
+
+  // Upload
+  progressBar.classList.add('visible');
+  progressFill.style.width = '0%';
+  imageUploadBtn.disabled = true;
+
+  try {
+    const data = await uploadImage(file, {
+      onProgress: (pct) => {
+        progressFill.style.width = `${pct}%`;
+      },
+    });
+    _pendingImageMetaId = data.id;
+    showToast('Image attached.', 'success', 2000);
+  } catch (err) {
+    showToast(err.message || 'Upload failed.', 'error');
+    _clearImagePreview();
+  } finally {
+    progressBar.classList.remove('visible');
+    imageUploadBtn.disabled = false;
+    imageFileInput.value = '';
+  }
 });
 
-document.querySelectorAll('.toolbar-btn[data-md]').forEach(btn=>{
-  btn.addEventListener('click',()=>{
-    const ta=document.getElementById('composer-textarea');const md=btn.dataset.md;
-    const sel=ta.value.substring(ta.selectionStart,ta.selectionEnd);
-    const ins=sel?`${md}${sel}${md}`:md;const s=ta.selectionStart;
-    ta.value=ta.value.substring(0,s)+ins+ta.value.substring(ta.selectionEnd);
-    ta.selectionStart=ta.selectionEnd=s+ins.length;ta.focus();
+imageRemove.addEventListener('click', _clearImagePreview);
+
+function _clearImagePreview() {
+  _pendingImageMetaId = null;
+  imageThumb.src = '';
+  imageName.textContent = '';
+  imagePreview.classList.remove('visible');
+  imageFileInput.value = '';
+}
+
+// ── Sidebar Toggle (mobile) ──────────────────────────────────────────
+
+const sidebar        = document.getElementById('sidebar');
+const sidebarOverlay = document.getElementById('sidebar-overlay');
+const sidebarToggle  = document.getElementById('sidebar-toggle');
+
+sidebarToggle.addEventListener('click', toggleSidebar);
+sidebarOverlay.addEventListener('click', closeSidebar);
+
+document.getElementById('new-chat-btn').addEventListener('click', () => {
+  closeSidebar();
+  history.pushState({}, '', '/new');
+  window.dispatchEvent(new PopStateEvent('popstate'));
+  textarea.focus();
+});
+
+function toggleSidebar() {
+  const open = sidebar.classList.toggle('open');
+  sidebarOverlay.classList.toggle('visible', open);
+  sidebar.setAttribute('aria-hidden', String(!open));
+  sidebarOverlay.setAttribute('aria-hidden', String(!open));
+}
+
+function closeSidebar() {
+  sidebar.classList.remove('open');
+  sidebarOverlay.classList.remove('visible');
+  sidebar.setAttribute('aria-hidden', 'true');
+  sidebarOverlay.setAttribute('aria-hidden', 'true');
+}
+
+// ── Empty state prompt buttons ───────────────────────────────────────
+
+document.querySelectorAll('.empty-prompt-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    textarea.value = btn.dataset.prompt;
+    textarea.dispatchEvent(new Event('input'));
+    textarea.focus();
   });
 });
 
-document.getElementById('toggle-citations').addEventListener('click',()=>{
-  const e=document.getElementById('citations-editor');
-  e.style.display=e.style.display==='flex'?'none':'flex';
+// ── User account dropdown ────────────────────────────────────────────
+
+const sidebarUserBtn = document.getElementById('sidebar-user-btn');
+
+sidebarUserBtn.addEventListener('click', () => {
+  openDropdown(sidebarUserBtn, [
+    {
+      label: 'Memory',
+      action: () => openMemoryPanel(),
+    },
+    'divider',
+    {
+      label: 'Sign out',
+      danger: true,
+      action: () => logout(),
+    },
+  ]);
 });
 
-document.getElementById('add-citation-row').addEventListener('click',()=>{
-  _citations.push({url:'',title:'',domain:'',excerpt:''});renderCitationRows();
+sidebarUserBtn.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter' || e.key === ' ') {
+    e.preventDefault();
+    sidebarUserBtn.click();
+  }
 });
 
-function renderCitationRows(){
-  document.getElementById('citation-rows').innerHTML=_citations.map((c,i)=>`
-    <div class="citation-row">
-      <input class="form-input" placeholder="URL" value="${_e(c.url)}" oninput="_citations[${i}].url=this.value" style="font-size:var(--text-xs);padding:var(--space-1) var(--space-2)" />
-      <input class="form-input" placeholder="Title" value="${_e(c.title)}" oninput="_citations[${i}].title=this.value" style="font-size:var(--text-xs);padding:var(--space-1) var(--space-2)" />
-      <button class="btn btn-ghost btn-sm" onclick="_citations.splice(${i},1);renderCitationRows()">×</button>
-    </div>`).join('');
+// ── Memory Panel ─────────────────────────────────────────────────────
+
+const memoryPanel     = document.getElementById('memory-panel');
+const memoryList      = document.getElementById('memory-list');
+const memoryAddInput  = document.getElementById('memory-add-input');
+const memoryAddBtn    = document.getElementById('memory-add-btn');
+const memoryToggleBtn = document.getElementById('memory-toggle-btn');
+const memoryCloseBtn  = document.getElementById('memory-close-btn');
+
+memoryToggleBtn.addEventListener('click', openMemoryPanel);
+memoryCloseBtn.addEventListener('click', closeMemoryPanel);
+
+async function openMemoryPanel() {
+  memoryPanel.classList.add('open');
+  memoryPanel.setAttribute('aria-hidden', 'false');
+  await refreshMemoryList();
+  memoryAddInput.focus();
 }
 
-document.getElementById('assign-btn').addEventListener('click',async()=>{
-  if(!_activeConvId)return;
-  await fetch(`${API}/assign`,{method:'POST',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify({conversation_id:_activeConvId})});
-  document.getElementById('assign-btn').style.display='none';document.getElementById('unassign-btn').style.display='inline-flex';
+function closeMemoryPanel() {
+  memoryPanel.classList.remove('open');
+  memoryPanel.setAttribute('aria-hidden', 'true');
+}
+
+async function refreshMemoryList() {
+  try {
+    const data = await memoryAPI.list();
+    const items = data.memories ?? [];
+
+    if (items.length === 0) {
+      memoryList.innerHTML = '<p class="sidebar-empty">No memories saved yet.</p>';
+      return;
+    }
+
+    memoryList.innerHTML = '';
+    for (const mem of items) {
+      const item = document.createElement('div');
+      item.className = 'memory-item';
+      item.dataset.memoryId = mem.id;
+      item.innerHTML = `
+        <span class="memory-item-text">${_escHtml(mem.content)}</span>
+        <button class="memory-item-delete" aria-label="Delete memory" title="Delete">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="3 6 5 6 21 6"/>
+            <path d="M19 6l-1 14H6L5 6"/>
+            <path d="M10 11v6"/><path d="M14 11v6"/>
+            <path d="M9 6V4h6v2"/>
+          </svg>
+        </button>
+      `;
+
+      item.querySelector('.memory-item-delete').addEventListener('click', async () => {
+        try {
+          await memoryAPI.delete(mem.id);
+          item.remove();
+          if (memoryList.children.length === 0) {
+            memoryList.innerHTML = '<p class="sidebar-empty">No memories saved yet.</p>';
+          }
+        } catch {
+          showToast('Could not delete memory.', 'error');
+        }
+      });
+
+      memoryList.appendChild(item);
+    }
+  } catch {
+    showToast('Could not load memories.', 'error');
+  }
+}
+
+memoryAddBtn.addEventListener('click', addMemory);
+memoryAddInput.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') addMemory();
 });
 
-document.getElementById('unassign-btn').addEventListener('click',async()=>{
-  if(!_activeConvId)return;
-  await fetch(`${API}/unassign`,{method:'POST',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify({conversation_id:_activeConvId})});
-  document.getElementById('assign-btn').style.display='inline-flex';document.getElementById('unassign-btn').style.display='none';
+async function addMemory() {
+  const content = memoryAddInput.value.trim();
+  if (!content) return;
+
+  memoryAddBtn.disabled = true;
+  try {
+    await memoryAPI.add(content);
+    memoryAddInput.value = '';
+    await refreshMemoryList();
+    showToast('Memory saved.', 'success', 2000);
+  } catch {
+    showToast('Could not save memory.', 'error');
+  } finally {
+    memoryAddBtn.disabled = false;
+  }
+}
+
+// ── Helpers ──────────────────────────────────────────────────────────
+
+function _escHtml(str) {
+  if (typeof str !== 'string') return '';
+  return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+// ── Start ────────────────────────────────────────────────────────────
+
+boot().catch(err => {
+  console.error('[sia] boot failed', err);
+  document.getElementById('app-shell').classList.add('ready');
 });
-
-window.editMsg=async function(msgId){
-  const newContent=prompt('Edit assistant message:');
-  if(!newContent)return;
-  await fetch(`${API}/messages/${msgId}/edit`,{method:'PATCH',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify({content:newContent})});
-  await loadConvMessages(_activeConvId);
-};
-
-async function loadNotes(convId){
-  const r=await fetch(`${API}/notes/${convId}?type=conversation`,{credentials:'include'});
-  const d=await r.json();
-  document.getElementById('notes-list').innerHTML=(d.notes??[]).length===0
-    ?'<p style="font-size:var(--text-xs);color:var(--text-muted);padding:var(--space-3)">No notes yet.</p>'
-    :(d.notes??[]).map(n=>`<div class="note-card">${n.tag?`<div class="note-card-tag">${_e(n.tag)}</div>`:''}<div class="note-card-body">${_e(n.content)}</div><div class="note-card-meta">${_e(n.admin_name)} · ${_rt(n.created_at)}</div></div>`).join('');
-}
-
-document.getElementById('save-note-btn').addEventListener('click',async()=>{
-  const content=document.getElementById('note-textarea').value.trim();
-  const tag=document.getElementById('note-tag').value.trim();
-  if(!content||!_activeConvId)return;
-  await fetch(`${API}/notes`,{method:'POST',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify({target_type:'conversation',target_id:_activeConvId,content,tag})});
-  document.getElementById('note-textarea').value='';document.getElementById('note-tag').value='';
-  await loadNotes(_activeConvId);
-});
-
-async function loadUsers(){
-  const r=await fetch(`${API}/users`,{credentials:'include'});const d=await r.json();
-  document.getElementById('users-tbody').innerHTML=(d.users??[]).map(u=>`<tr><td>${_e(u.display_name)}</td><td>${_e(u.email)}</td><td><span class="presence-dot ${u.state||'offline'}"></span>${u.state||'offline'}</td><td>${u.last_seen?_rt(u.last_seen):'—'}</td><td>${_rt(u.created_at)}</td></tr>`).join('');
-}
-
-async function loadAnalytics(){
-  const r=await fetch(`${API}/analytics`,{credentials:'include'});const d=await r.json();
-  document.getElementById('an-sessions').textContent=d.sessions?.total??0;
-  const rx=d.reactions??[];
-  document.getElementById('an-up').textContent=rx.find(r=>r.type==='up')?.count??0;
-  document.getElementById('an-down').textContent=rx.find(r=>r.type==='down')?.count??0;
-  document.getElementById('analytics-tbody').innerHTML=(d.messages_per_day??[]).map(r=>`<tr><td>${r.date}</td><td>${r.count}</td></tr>`).join('');
-}
-
-async function loadExpiry(){
-  const r=await fetch(`${API}/expiring`,{credentials:'include'});const d=await r.json();
-  document.getElementById('expiry-tbody').innerHTML=(d.expiring??[]).map(c=>`<tr><td>${_e(c.email)}</td><td>${_e(c.title)}</td><td>${_rt(c.expires_at)}</td><td><button class="btn btn-secondary btn-sm" onclick="preserveChat('${c.id}')">Preserve</button></td></tr>`).join('');
-  document.getElementById('expired-tbody').innerHTML=(d.recently_expired??[]).map(c=>`<tr><td>${_e(c.email)}</td><td>${_e(c.title)}</td><td>${_rt(c.expires_at)}</td></tr>`).join('');
-}
-
-window.preserveChat=async function(id){
-  await fetch(`${API}/conversations/${id}/preserve`,{method:'POST',credentials:'include'});await loadExpiry();
-};
-
-async function loadSettings(){
-  const r=await fetch(`${API}/settings`,{credentials:'include'});const d=await r.json();const s=d.settings??{};
-  document.getElementById('set-expiry-days').value=s.chat_expiry_days??30;
-  document.getElementById('set-warn-days').value=s.expiry_warning_days??3;
-  document.getElementById('set-max-msg').value=s.max_message_length??32000;
-  document.getElementById('set-reg-enabled').checked=s.registration_enabled!=='false';
-}
-
-document.getElementById('save-settings-btn').addEventListener('click',async()=>{
-  const body={chat_expiry_days:document.getElementById('set-expiry-days').value,expiry_warning_days:document.getElementById('set-warn-days').value,max_message_length:document.getElementById('set-max-msg').value,registration_enabled:document.getElementById('set-reg-enabled').checked?'true':'false'};
-  await fetch(`${API}/settings`,{method:'PATCH',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
-  alert('Settings saved.');
-});
-
-function showErr(m){const e=document.getElementById('op-error');e.textContent=m;e.classList.add('visible');}
-function clearErr(){document.getElementById('op-error').classList.remove('visible');}
-function _e(s){if(!s)return'';return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
-function _rt(s){if(!s)return'—';const d=Math.floor((Date.now()-new Date(s).getTime())/1000);if(d<60)return'just now';if(d<3600)return`${Math.floor(d/60)}m ago`;if(d<86400)return`${Math.floor(d/3600)}h ago`;return`${Math.floor(d/86400)}d ago`;}
-
-boot();
 </script>
+
 </body>
 </html>
