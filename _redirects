@@ -1,0 +1,5 @@
+/new      /index.html  200
+/c/*      /index.html  200
+/login    /pages/login.html  200
+/op       /pages/op.html  200
+/shared/* /pages/shared.html  200
