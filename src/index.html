@@ -22,10 +22,10 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/9.1.6/marked.min.js" defer></script>
 
   <!-- CSS -->
-<link rel="stylesheet" href="/src/css/base.css" />
-<link rel="stylesheet" href="/src/css/layout.css" />
-<link rel="stylesheet" href="/src/css/messages.css" />
-<link rel="stylesheet" href="/src/css/components.css" />
+<link rel="stylesheet" href="/css/base.css" />
+<link rel="stylesheet" href="/css/layout.css" />
+<link rel="stylesheet" href="/css/messages.css" />
+<link rel="stylesheet" href="/css/components.css" />
 
   <style>
     /* Page-specific overrides */
@@ -233,16 +233,16 @@
 
 <!-- ── Scripts ─────────────────────────────────────────────────────── -->
 <script type="module">
-import { initAuth, currentUser, logout, isAuthenticated } from '/src/js/auth.js';
-import { initRenderer }                                    from '/src/js/renderer.js';
+import { initAuth, currentUser, logout, isAuthenticated } from '/js/auth.js';
+import { initRenderer }                                    from '/js/renderer.js';
 import { loadConversation, loadConversationList,
          sendMessage, cancelPending, onUserTyping,
-         createNewConversation, getActiveConversationId }  from '/src/js/chat.js';
-import { uploadImage }                                     from '/src/js/api.js';
-import { memory as memoryAPI }                             from '/src/js/api.js';
+         createNewConversation, getActiveConversationId }  from '/js/chat.js';
+import { uploadImage }                                     from '/js/api.js';
+import { memory as memoryAPI }                             from '/js/api.js';
 import { initAutoExpand, initScrollTracking,
          resetScrollTracking, showToast,
-         openDropdown, scrollToBottom }                    from '/src/js/ui.js';
+         openDropdown, scrollToBottom }                    from '/js/ui.js';
 
 // ── Boot ────────────────────────────────────────────────────────────
 
