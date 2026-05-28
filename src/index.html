@@ -133,7 +133,9 @@ async function boot() {
   } catch(e) {}
 
   if (!_user) {
-    location.href = '/login?next=' + encodeURIComponent(location.pathname);
+    const currentPath = location.pathname;
+    const isRoot = currentPath === '/' || currentPath === '/login' || currentPath === '/new';
+    location.href = isRoot ? '/login' : '/login?next=' + encodeURIComponent(currentPath);
     return;
   }
 
