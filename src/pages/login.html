@@ -139,12 +139,16 @@
   (async function() {
     try {
       const r = await fetch(API + '/auth/me', { credentials: 'include' });
+      if (!r.ok) return; // not logged in, stay on login page
       const d = await r.json();
       if (d.user) {
         const next = new URLSearchParams(location.search).get('next');
-        location.href = (next && next.startsWith('/')) ? next : '/';
+        const safe = next && next.startsWith('/') && next !== '/login' && !next.startsWith('/login');
+        location.href = safe ? next : '/';
       }
-    } catch(e) {}
+    } catch(e) {
+      // API not reachable, just show login form
+    }
   })();
 
   function setMode(m) {
@@ -210,7 +214,8 @@
       if (!r.ok) { showError(d.error || 'Something went wrong.'); return; }
 
       const next = new URLSearchParams(location.search).get('next');
-      location.href = (next && next.startsWith('/')) ? next : '/';
+      const safe = next && next.startsWith('/') && next !== '/login' && !next.startsWith('/login');
+      location.href = safe ? next : '/';
 
     } catch(e) {
       showError('Network error. Please try again.');
