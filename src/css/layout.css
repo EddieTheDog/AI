@@ -13,16 +13,24 @@
 
 .sidebar {
   width: var(--sidebar-width);
-  flex-shrink: 0;
   display: flex;
   flex-direction: column;
   background: var(--bg-2);
   border-right: 1px solid var(--border-soft);
   height: 100dvh;
   overflow: hidden;
-  position: relative;
-  z-index: 20;
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  z-index: 100;
+  transform: translateX(-100%);
   transition: transform var(--duration-slow) var(--ease);
+  box-shadow: var(--shadow-xl);
+}
+
+.sidebar.open {
+  transform: translateX(0);
 }
 
 .sidebar-header {
@@ -605,4 +613,31 @@
   .input-area {
     padding: var(--space-3);
   }
+}
+
+/* ── Sidebar overlay (always active, not just mobile) ─────────────────── */
+
+.sidebar-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  z-index: 99;
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+}
+
+.sidebar-overlay.visible {
+  display: block;
+}
+
+.sidebar-toggle {
+  display: flex !important;
+}
+
+/* ── Main takes full width since sidebar is always an overlay ─────────── */
+
+.main {
+  width: 100% !important;
+  flex: 1;
 }
