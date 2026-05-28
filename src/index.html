@@ -233,16 +233,16 @@
 
 <!-- ── Scripts ─────────────────────────────────────────────────────── -->
 <script type="module">
-import { initAuth, currentUser, logout, isAuthenticated } from '/js/auth.js';
-import { initRenderer }                                    from '/js/renderer.js';
+import { initAuth, currentUser, logout, isAuthenticated } from '/src/js/auth.js';
+import { initRenderer }                                    from '/src/js/renderer.js';
 import { loadConversation, loadConversationList,
          sendMessage, cancelPending, onUserTyping,
-         createNewConversation, getActiveConversationId }  from '/js/chat.js';
-import { uploadImage }                                     from '/js/api.js';
-import { memory as memoryAPI }                             from '/js/api.js';
+         createNewConversation, getActiveConversationId }  from '/src/js/chat.js';
+import { uploadImage }                                     from '/src/js/api.js';
+import { memory as memoryAPI }                             from '/src/js/api.js';
 import { initAutoExpand, initScrollTracking,
          resetScrollTracking, showToast,
-         openDropdown, scrollToBottom }                    from '/js/ui.js';
+         openDropdown, scrollToBottom }                    from '/src/js/ui.js';
 
 // ── Boot ────────────────────────────────────────────────────────────
 
