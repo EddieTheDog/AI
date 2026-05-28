@@ -1,4 +1,4 @@
-<!-- src/pages/login.html -->
+<!-- pages/login.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -6,372 +6,227 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="robots" content="noindex, nofollow" />
   <title>Sign in — SIA</title>
-
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
-
   <link rel="stylesheet" href="/css/base.css" />
   <link rel="stylesheet" href="/css/components.css" />
-
   <style>
     body {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      min-height: 100dvh;
-      padding: var(--space-4);
-      background: var(--bg);
+      display: flex; align-items: center; justify-content: center;
+      min-height: 100dvh; padding: var(--space-4);
     }
-
-    /* Subtle background grid */
     body::before {
-      content: '';
-      position: fixed;
-      inset: 0;
-      background-image:
-        linear-gradient(var(--border-soft) 1px, transparent 1px),
+      content: ''; position: fixed; inset: 0;
+      background-image: linear-gradient(var(--border-soft) 1px, transparent 1px),
         linear-gradient(90deg, var(--border-soft) 1px, transparent 1px);
-      background-size: 48px 48px;
-      opacity: 0.4;
-      pointer-events: none;
+      background-size: 48px 48px; opacity: 0.4; pointer-events: none;
     }
-
-    .auth-card {
-      position: relative;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-xl);
-      padding: var(--space-8) var(--space-8);
-      width: 100%;
-      max-width: 400px;
-      box-shadow: var(--shadow-xl);
-      animation: cardIn 0.4s var(--ease) both;
+    .card {
+      position: relative; background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius-xl); padding: var(--space-8);
+      width: 100%; max-width: 400px; box-shadow: var(--shadow-xl);
+      animation: cardIn 0.35s var(--ease) both;
     }
-
     @keyframes cardIn {
-      from { opacity: 0; transform: translateY(16px) scale(0.98); }
-      to   { opacity: 1; transform: translateY(0) scale(1); }
+      from { opacity:0; transform: translateY(14px) scale(0.98); }
+      to   { opacity:1; transform: translateY(0) scale(1); }
     }
-
-    .auth-logo {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: var(--space-2);
-      margin-bottom: var(--space-6);
-      text-decoration: none;
+    .logo {
+      display: flex; align-items: center; justify-content: center;
+      gap: var(--space-2); margin-bottom: var(--space-6); text-decoration: none;
     }
-
-    .auth-logo-mark {
-      width: 38px;
-      height: 38px;
-      background: var(--accent);
-      border-radius: var(--radius-lg);
-      display: flex;
-      align-items: center;
-      justify-content: center;
+    .logo-mark {
+      width: 38px; height: 38px; background: var(--accent);
+      border-radius: var(--radius-lg); display: flex; align-items: center; justify-content: center;
     }
-
-    .auth-logo-text {
-      font-size: var(--text-xl);
-      font-weight: var(--weight-semibold);
-      color: var(--text);
-      letter-spacing: -0.03em;
+    .logo-text { font-size: var(--text-xl); font-weight: var(--weight-semibold); color: var(--text); letter-spacing: -0.03em; }
+    .auth-title { font-size: var(--text-lg); font-weight: var(--weight-semibold); text-align: center; margin-bottom: var(--space-1); }
+    .auth-sub { font-size: var(--text-sm); color: var(--text-muted); text-align: center; margin-bottom: var(--space-6); }
+    .error-box {
+      display: none; background: rgba(248,113,113,0.1);
+      border: 1px solid rgba(248,113,113,0.3); border-radius: var(--radius-md);
+      padding: var(--space-3); font-size: var(--text-sm); color: var(--error); margin-bottom: var(--space-4);
     }
-
-    .auth-title {
-      font-size: var(--text-lg);
-      font-weight: var(--weight-semibold);
-      color: var(--text);
-      margin-bottom: var(--space-1);
-      text-align: center;
-      letter-spacing: -0.01em;
+    .error-box.show { display: block; }
+    .field { display: flex; flex-direction: column; gap: var(--space-2); margin-bottom: var(--space-4); }
+    .field label { font-size: var(--text-sm); font-weight: var(--weight-medium); color: var(--text-secondary); }
+    .field input {
+      background: var(--surface-2); border: 1px solid var(--border);
+      border-radius: var(--radius-md); padding: var(--space-3) var(--space-4);
+      font-size: var(--text-base); color: var(--text); font-family: inherit;
+      transition: border-color 0.15s;
     }
-
-    .auth-subtitle {
-      font-size: var(--text-sm);
-      color: var(--text-muted);
-      text-align: center;
-      margin-bottom: var(--space-6);
-    }
-
-    .auth-form {
-      display: flex;
-      flex-direction: column;
-      gap: 0;
-    }
-
-    .auth-error {
-      display: none;
-      background: rgba(248,113,113,0.1);
-      border: 1px solid rgba(248,113,113,0.25);
-      border-radius: var(--radius-md);
-      padding: var(--space-3) var(--space-4);
-      font-size: var(--text-sm);
-      color: var(--error);
-      margin-bottom: var(--space-4);
-    }
-
-    .auth-error.visible {
-      display: block;
-    }
-
-    .auth-submit {
-      width: 100%;
-      padding: var(--space-3);
-      margin-top: var(--space-4);
-      font-size: var(--text-base);
-      border-radius: var(--radius-lg);
-    }
-
-    .auth-switch {
-      text-align: center;
-      margin-top: var(--space-5);
-      font-size: var(--text-sm);
-      color: var(--text-muted);
-    }
-
-    .auth-switch a {
-      color: var(--accent);
-      font-weight: var(--weight-medium);
-    }
-
-    .auth-switch a:hover {
-      color: var(--accent-hover);
-    }
-
-    /* Loading spinner on button */
-    .btn-loading {
+    .field input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-dim); }
+    .field input::placeholder { color: var(--text-muted); }
+    .submit-btn {
+      width: 100%; padding: var(--space-3); margin-top: var(--space-2);
+      background: var(--accent); color: white; border: none; border-radius: var(--radius-lg);
+      font-size: var(--text-base); font-weight: var(--weight-medium); cursor: pointer;
+      font-family: inherit; transition: background 0.15s, transform 0.1s;
       position: relative;
-      color: transparent !important;
-      pointer-events: none;
     }
-
-    .btn-loading::after {
-      content: '';
-      position: absolute;
-      width: 16px;
-      height: 16px;
-      border: 2px solid rgba(255,255,255,0.3);
-      border-top-color: white;
-      border-radius: 50%;
-      animation: spin 0.7s linear infinite;
+    .submit-btn:hover { background: var(--accent-hover); }
+    .submit-btn:active { transform: scale(0.98); }
+    .submit-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+    .submit-btn.loading { color: transparent; }
+    .submit-btn.loading::after {
+      content: ''; position: absolute; width: 16px; height: 16px;
+      border: 2px solid rgba(255,255,255,0.3); border-top-color: white;
+      border-radius: 50%; animation: spin 0.7s linear infinite;
+      top: 50%; left: 50%; transform: translate(-50%,-50%);
     }
-
-    @keyframes spin {
-      to { transform: rotate(360deg); }
-    }
-
-    .name-field {
-      display: none;
-    }
-
-    .name-field.visible {
-      display: block;
-    }
-
-    kbd {
-      font-family: var(--font-mono);
-    }
+    @keyframes spin { to { transform: translate(-50%,-50%) rotate(360deg); } }
+    .switch { text-align: center; margin-top: var(--space-5); font-size: var(--text-sm); color: var(--text-muted); }
+    .switch a { color: var(--accent); font-weight: var(--weight-medium); text-decoration: none; cursor: pointer; }
+    .switch a:hover { color: var(--accent-hover); }
+    .name-field { display: none; }
+    .name-field.show { display: flex; }
   </style>
 </head>
 <body>
-
-<div class="auth-card" role="main">
-
-  <a href="/" class="auth-logo" aria-label="SIA home">
-    <div class="auth-logo-mark" aria-hidden="true">
+<div class="card">
+  <a href="/" class="logo">
+    <div class="logo-mark">
       <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
         <path d="M4 15 Q11 4 18 15" stroke="white" stroke-width="2" fill="none" stroke-linecap="round"/>
         <circle cx="11" cy="9" r="2.2" fill="white"/>
       </svg>
     </div>
-    <span class="auth-logo-text">SIA</span>
+    <span class="logo-text">SIA</span>
   </a>
 
-  <h1 class="auth-title" id="auth-title">Welcome back</h1>
-  <p class="auth-subtitle" id="auth-subtitle">Sign in to continue</p>
+  <h1 class="auth-title" id="title">Welcome back</h1>
+  <p class="auth-sub" id="subtitle">Sign in to continue</p>
 
-  <div class="auth-error" id="auth-error" role="alert" aria-live="polite"></div>
+  <div class="error-box" id="error-box"></div>
 
-  <form class="auth-form" id="auth-form" novalidate>
+  <div class="field name-field" id="name-field">
+    <label for="name-input">Your name</label>
+    <input id="name-input" type="text" placeholder="Your name" autocomplete="name" maxlength="80" />
+  </div>
+  <div class="field">
+    <label for="email-input">Email</label>
+    <input id="email-input" type="email" placeholder="you@example.com" autocomplete="email" />
+  </div>
+  <div class="field">
+    <label for="pass-input">Password</label>
+    <input id="pass-input" type="password" placeholder="••••••••" autocomplete="current-password" />
+  </div>
 
-    <!-- Display name (register only) -->
-    <div class="form-group name-field" id="name-field">
-      <label class="form-label" for="display-name">Name</label>
-      <input
-        class="form-input"
-        id="display-name"
-        type="text"
-        autocomplete="name"
-        placeholder="Your name"
-        maxlength="80"
-      />
-    </div>
+  <button class="submit-btn" id="submit-btn">Sign in</button>
 
-    <!-- Email -->
-    <div class="form-group">
-      <label class="form-label" for="email">Email</label>
-      <input
-        class="form-input"
-        id="email"
-        type="email"
-        autocomplete="email"
-        placeholder="you@example.com"
-        required
-        inputmode="email"
-      />
-    </div>
-
-    <!-- Password -->
-    <div class="form-group">
-      <label class="form-label" for="password">Password</label>
-      <input
-        class="form-input"
-        id="password"
-        type="password"
-        autocomplete="current-password"
-        placeholder="••••••••"
-        required
-        minlength="8"
-      />
-    </div>
-
-    <button class="btn btn-primary auth-submit" id="submit-btn" type="submit">
-      Sign in
-    </button>
-
-  </form>
-
-  <p class="auth-switch" id="auth-switch">
-    Don't have an account? <a href="#" id="mode-toggle">Create one</a>
+  <p class="switch" id="switch-text">
+    Don't have an account? <a id="mode-link">Create one</a>
   </p>
-
 </div>
 
-<script type="module">
-import { login, register, initAuth } from '/js/auth.js';
+<script>
+  const API    = '/api';
+  let mode     = 'login';
 
-// ── Check already logged in ──────────────────────────────────────────
+  const titleEl    = document.getElementById('title');
+  const subEl      = document.getElementById('subtitle');
+  const nameField  = document.getElementById('name-field');
+  const nameInput  = document.getElementById('name-input');
+  const emailInput = document.getElementById('email-input');
+  const passInput  = document.getElementById('pass-input');
+  const submitBtn  = document.getElementById('submit-btn');
+  const errorBox   = document.getElementById('error-box');
+  const switchText = document.getElementById('switch-text');
 
-(async () => {
-  const user = await initAuth();
-  if (user) {
-    const next = new URLSearchParams(window.location.search).get('next');
-    window.location.href = next && next.startsWith('/') ? next : '/new';
-  }
-})();
+  // Check if already logged in
+  (async function() {
+    try {
+      const r = await fetch(API + '/auth/me', { credentials: 'include' });
+      const d = await r.json();
+      if (d.user) {
+        const next = new URLSearchParams(location.search).get('next');
+        location.href = (next && next.startsWith('/')) ? next : '/';
+      }
+    } catch(e) {}
+  })();
 
-// ── Mode toggle (login ↔ register) ──────────────────────────────────
-
-let mode = 'login';
-
-const modeToggle   = document.getElementById('mode-toggle');
-const nameField    = document.getElementById('name-field');
-const nameInput    = document.getElementById('display-name');
-const passwordInput = document.getElementById('password');
-const authTitle    = document.getElementById('auth-title');
-const authSubtitle = document.getElementById('auth-subtitle');
-const submitBtn    = document.getElementById('submit-btn');
-const authSwitch   = document.getElementById('auth-switch');
-
-modeToggle.addEventListener('click', (e) => {
-  e.preventDefault();
-  mode = mode === 'login' ? 'register' : 'login';
-  _updateMode();
-});
-
-function _updateMode() {
-  clearError();
-  if (mode === 'register') {
-    authTitle.textContent   = 'Create account';
-    authSubtitle.textContent = 'Join SIA to get started';
-    submitBtn.textContent   = 'Create account';
-    authSwitch.innerHTML    = 'Already have an account? <a href="#" id="mode-toggle">Sign in</a>';
-    nameField.classList.add('visible');
-    passwordInput.autocomplete = 'new-password';
-    document.getElementById('mode-toggle').addEventListener('click', (e) => {
-      e.preventDefault();
-      mode = 'login';
-      _updateMode();
-    });
-  } else {
-    authTitle.textContent   = 'Welcome back';
-    authSubtitle.textContent = 'Sign in to continue';
-    submitBtn.textContent   = 'Sign in';
-    authSwitch.innerHTML    = 'Don\'t have an account? <a href="#" id="mode-toggle">Create one</a>';
-    nameField.classList.remove('visible');
-    nameInput.value         = '';
-    passwordInput.autocomplete = 'current-password';
-    document.getElementById('mode-toggle').addEventListener('click', (e) => {
-      e.preventDefault();
-      mode = 'register';
-      _updateMode();
-    });
-  }
-}
-
-// ── Form submit ──────────────────────────────────────────────────────
-
-document.getElementById('auth-form').addEventListener('submit', async (e) => {
-  e.preventDefault();
-  clearError();
-
-  const email    = document.getElementById('email').value.trim();
-  const password = document.getElementById('password').value;
-  const name     = nameInput.value.trim();
-
-  if (!email || !password) {
-    showError('Please fill in all fields.');
-    return;
-  }
-
-  if (password.length < 8) {
-    showError('Password must be at least 8 characters.');
-    return;
-  }
-
-  if (mode === 'register' && !name) {
-    showError('Please enter your name.');
-    return;
-  }
-
-  submitBtn.classList.add('btn-loading');
-  submitBtn.disabled = true;
-
-  try {
-    if (mode === 'login') {
-      await login(email, password);
+  function setMode(m) {
+    mode = m;
+    if (mode === 'register') {
+      titleEl.textContent     = 'Create account';
+      subEl.textContent       = 'Join SIA to get started';
+      submitBtn.textContent   = 'Create account';
+      nameField.classList.add('show');
+      passInput.autocomplete  = 'new-password';
+      switchText.innerHTML    = 'Already have an account? <a id="mode-link">Sign in</a>';
     } else {
-      await register(email, password, name);
+      titleEl.textContent     = 'Welcome back';
+      subEl.textContent       = 'Sign in to continue';
+      submitBtn.textContent   = 'Sign in';
+      nameField.classList.remove('show');
+      passInput.autocomplete  = 'current-password';
+      switchText.innerHTML    = "Don't have an account? <a id=\"mode-link\">Create one</a>";
     }
-
-    const next = new URLSearchParams(window.location.search).get('next');
-    window.location.href = next && next.startsWith('/') ? next : '/new';
-
-  } catch (err) {
-    showError(err.message || 'Something went wrong. Please try again.');
-  } finally {
-    submitBtn.classList.remove('btn-loading');
-    submitBtn.disabled = false;
+    document.getElementById('mode-link').addEventListener('click', function() {
+      setMode(mode === 'login' ? 'register' : 'login');
+    });
+    clearError();
   }
-});
 
-// ── Helpers ──────────────────────────────────────────────────────────
+  document.getElementById('mode-link').addEventListener('click', function() {
+    setMode(mode === 'login' ? 'register' : 'login');
+  });
 
-function showError(msg) {
-  const el = document.getElementById('auth-error');
-  el.textContent = msg;
-  el.classList.add('visible');
-}
+  submitBtn.addEventListener('click', doSubmit);
+  passInput.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') doSubmit();
+  });
 
-function clearError() {
-  const el = document.getElementById('auth-error');
-  el.textContent = '';
-  el.classList.remove('visible');
-}
+  async function doSubmit() {
+    clearError();
+    const email = emailInput.value.trim();
+    const pass  = passInput.value;
+    const name  = nameInput.value.trim();
+
+    if (!email)          return showError('Email is required.');
+    if (!pass)           return showError('Password is required.');
+    if (pass.length < 8) return showError('Password must be at least 8 characters.');
+    if (mode === 'register' && !name) return showError('Please enter your name.');
+
+    submitBtn.disabled = true;
+    submitBtn.classList.add('loading');
+
+    try {
+      const endpoint = mode === 'login' ? '/auth/login' : '/auth/register';
+      const body     = mode === 'login'
+        ? { email, password: pass }
+        : { email, password: pass, display_name: name };
+
+      const r = await fetch(API + endpoint, {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+
+      const d = await r.json();
+      if (!r.ok) { showError(d.error || 'Something went wrong.'); return; }
+
+      const next = new URLSearchParams(location.search).get('next');
+      location.href = (next && next.startsWith('/')) ? next : '/';
+
+    } catch(e) {
+      showError('Network error. Please try again.');
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.classList.remove('loading');
+    }
+  }
+
+  function showError(msg) {
+    errorBox.textContent = msg;
+    errorBox.classList.add('show');
+  }
+  function clearError() {
+    errorBox.classList.remove('show');
+  }
 </script>
-
 </body>
 </html>
