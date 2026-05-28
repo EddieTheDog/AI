@@ -59,11 +59,16 @@ async function handleAPI(path, method, request, env, ctx) {
     return handleSharing(path, method, request, env, null);
   }
 
-  // Admin routes — separate auth
+  // Admin routes — public admin routes (login/register/me) pass null admin,
+  // handleAdmin checks auth internally for protected routes
   if (path.startsWith('/admin/')) {
-    const admin = await authMiddleware(request, env, 'admin');
-    if (!admin) return err('Unauthorized', 401);
-    return handleAdmin(path.slice(6), method, request, env, admin);
+    const adminPath = path.slice(6); // strip '/admin'
+    const publicAdminRoutes = ['login', 'register', 'me', 'logout'];
+    const isPublic = publicAdminRoutes.some(r => adminPath === `/${r}` || adminPath.startsWith(`/${r}`));
+
+    const admin = isPublic ? null : await authMiddleware(request, env, 'admin');
+    if (!isPublic && !admin) return err('Unauthorized', 401);
+    return handleAdmin(adminPath, method, request, env, admin);
   }
 
   // All other routes require user auth
