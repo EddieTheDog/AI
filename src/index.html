@@ -426,8 +426,79 @@ async function doReaction(msgId, type, btn, otherBtn) {
   } catch(e) {}
 }
 
+function setupMarked() {
+  if (!window.marked || window._markedReady) return;
+  const renderer = new marked.Renderer();
+
+  renderer.code = (code, lang) => {
+    const l = (lang || 'text').toLowerCase();
+    let highlighted = escHtml(code);
+    if (window.hljs) {
+      try {
+        highlighted = window.hljs.getLanguage(l)
+          ? window.hljs.highlight(code, { language: l, ignoreIllegals: true }).value
+          : window.hljs.highlightAuto(code).value;
+      } catch(e) {}
+    }
+    const safeCode = code.replace(/"/g, '&quot;').replace(/`/g, '&#96;');
+    return `<div class="code-block" data-lang="${escHtml(l)}">
+      <div class="code-header">
+        <span class="code-lang">${escHtml(l)}</span>
+        <button class="code-copy-btn" data-code="${safeCode}">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+          Copy
+        </button>
+      </div>
+      <pre class="code-pre"><code class="hljs language-${escHtml(l)}">${highlighted}</code></pre>
+    </div>`;
+  };
+
+  renderer.codespan = code => `<code class="inline-code">${escHtml(code)}</code>`;
+
+  renderer.blockquote = quote => `<blockquote class="message-blockquote">${quote}</blockquote>`;
+
+  renderer.table = (header, body) => `
+    <div class="table-wrapper">
+      <table class="message-table">
+        <thead>${header}</thead>
+        <tbody>${body}</tbody>
+      </table>
+    </div>`;
+
+  renderer.link = (href, title, text) =>
+    `<a href="${escHtml(href)}" target="_blank" rel="noopener noreferrer">${text}</a>`;
+
+  renderer.heading = (text, level) =>
+    `<h${level} class="md-h${level}">${text}</h${level}>`;
+
+  renderer.list = (body, ordered) => {
+    const tag = ordered ? 'ol' : 'ul';
+    return `<${tag} class="md-list">${body}</${tag}>`;
+  };
+
+  renderer.listitem = text => `<li class="md-li">${text}</li>`;
+
+  renderer.paragraph = text => `<p class="md-p">${text}</p>`;
+
+  renderer.strong = text => `<strong class="md-strong">${text}</strong>`;
+
+  renderer.em = text => `<em class="md-em">${text}</em>`;
+
+  renderer.hr = () => `<hr class="md-hr" />`;
+
+  marked.use({
+    renderer,
+    gfm: true,
+    breaks: true,
+    pedantic: false,
+  });
+
+  window._markedReady = true;
+}
+
 function renderMd(text) {
   if (!text) return '';
+  setupMarked();
   if (window.marked) {
     try { return window.marked.parse(text); } catch(e) {}
   }
@@ -716,27 +787,7 @@ window.addEventListener('popstate', async () => {
   if (path.startsWith('/c/')) { await loadConversation(path.slice(3)); }
 });
 
-// ── Init ───────────────────────────────────────────────────────────────────────
-// Configure marked if available
-window.addEventListener('load', () => {
-  if (window.marked) {
-    const renderer = new marked.Renderer();
-    renderer.code = (code, lang) => {
-      const l = lang || 'text';
-      let highlighted = escHtml(code);
-      if (window.hljs) {
-        try {
-          highlighted = window.hljs.getLanguage(l)
-            ? window.hljs.highlight(code, { language: l, ignoreIllegals: true }).value
-            : window.hljs.highlightAuto(code).value;
-        } catch(e) {}
-      }
-      return `<div class="code-block" data-lang="${escHtml(l)}"><div class="code-header"><span class="code-lang">${escHtml(l)}</span><button class="code-copy-btn" data-code="${escHtml(code)}"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> Copy</button></div><pre class="code-pre"><code class="hljs">${highlighted}</code></pre></div>`;
-    };
-    renderer.codespan = code => `<code class="inline-code">${escHtml(code)}</code>`;
-    marked.setOptions({ renderer, gfm: true, breaks: true });
-  }
-});
+// ── Init ────────────────────────────────────────────────────────────────────────
 
 boot();
 </script>
