@@ -80,6 +80,8 @@
     .composer-footer{display:flex;align-items:center;gap:var(--space-2);justify-content:space-between}
     .stream-indicator{display:none;align-items:center;gap:var(--space-2);font-size:var(--text-xs);color:var(--warning)}
     .stream-indicator.active{display:flex}
+    .stream-mode-hint{display:none;font-size:var(--text-xs);color:var(--text-muted);background:rgba(108,99,255,0.08);border:1px solid rgba(108,99,255,0.2);border-radius:var(--radius-md);padding:var(--space-2) var(--space-3);line-height:1.5}
+    .stream-mode-hint.visible{display:block}
     .notes-sidebar{width:260px;flex-shrink:0;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);display:flex;flex-direction:column;overflow:hidden}
     .notes-header{padding:var(--space-3) var(--space-4);border-bottom:1px solid var(--border-soft);font-size:var(--text-sm);font-weight:var(--weight-semibold)}
     .notes-list{flex:1;overflow-y:auto;padding:var(--space-2);display:flex;flex-direction:column;gap:var(--space-2)}
@@ -211,6 +213,9 @@
                 <div class="composer-tab" data-tab="preview">Preview</div>
                 <div class="composer-tab" data-tab="stream">Stream mode</div>
               </div>
+              <div class="stream-mode-hint" id="stream-mode-hint">
+                <strong>Stream mode:</strong> Type your response in the box above, then click <em>Start streaming</em> to begin sending it live — the user sees each word appear as you type more chunks. When finished, click <em>End stream</em> to complete the message.
+              </div>
               <div class="composer-toolbar">
                 <button class="toolbar-btn" data-md="**" title="Bold"><b>B</b></button>
                 <button class="toolbar-btn" data-md="_" title="Italic"><i>I</i></button>
@@ -231,19 +236,13 @@
                 </div>
               </div>
               <div class="composer-footer">
-                <div class="stream-indicator" id="stream-indicator"><span class="presence-dot active"></span>Streaming...</div>
-                <div style="display:flex;gap:var(--space-2)">
-                  <div id="stream-controls" style="display:none;flex-direction:column;gap:6px;width:100%">
-                    <div style="display:flex;gap:6px;align-items:center">
-                      <input id="status-msg-input" class="form-input" placeholder="Status label (e.g. Researching... Thinking...)" style="font-size:var(--text-xs);padding:4px 10px;flex:1;" title="Set a visible status/thinking message the user sees while you type" />
-                      <button class="btn btn-secondary btn-sm" id="set-status-btn" title="Send this as the current thinking status">Set status</button>
-                    </div>
-                    <div style="display:flex;gap:6px;">
-                      <button class="btn btn-secondary btn-sm" id="stream-chunk-btn" title="Send this chunk of text to the user — they'll see it appear in real time">Send chunk</button>
-                      <button class="btn btn-danger btn-sm" id="stream-finish-btn" title="Finalize and close the stream — marks message as done">Finish &amp; send</button>
-                    </div>
+                <div style="display:flex;align-items:center;gap:var(--space-2);justify-content:space-between">
+                  <div class="stream-indicator" id="stream-indicator"><span class="presence-dot active"></span>Streaming live...</div>
+                  <div style="display:flex;gap:var(--space-2);align-items:center">
+                    <button class="btn btn-primary btn-sm" id="stream-start-btn" style="display:none" title="Start streaming — what you type will appear word by word to the user. Type in the box above and click this to begin.">Start streaming</button>
+                    <button class="btn btn-danger btn-sm" id="stream-end-btn" style="display:none" title="End the stream — finalizes the message and marks it as done for the user.">End stream</button>
+                    <button class="btn btn-primary" id="send-reply-btn" disabled title="Send a complete reply instantly — no streaming, just send the full message when ready.">Send reply</button>
                   </div>
-                  <button class="btn btn-primary" id="send-reply-btn" disabled title="Send complete reply instantly">Send reply</button>
                 </div>
               </div>
             </div>
@@ -569,8 +568,11 @@ document.querySelectorAll('.composer-tab').forEach(tab=>{
     document.getElementById('composer-textarea').style.display=t==='preview'?'none':'block';
     const previewEl = document.getElementById('composer-preview');
     previewEl.classList.toggle('visible',t==='preview');
-    document.getElementById('stream-controls').style.display=_streamMode?'flex':'none';
+    document.getElementById('stream-start-btn').style.display=_streamMode?'inline-flex':'none';
     document.getElementById('send-reply-btn').style.display=_streamMode?'none':'inline-flex';
+    document.getElementById('stream-end-btn').style.display='none';
+    document.getElementById('stream-mode-hint').classList.toggle('visible',_streamMode);
+    if(_streamMode) document.getElementById('stream-indicator').classList.remove('active');
     if(t==='preview') updatePreview();
   });
 });
@@ -579,44 +581,54 @@ document.getElementById('composer-textarea').addEventListener('input',()=>{
   if(document.getElementById('composer-preview').classList.contains('visible')) updatePreview();
 });
 
-document.getElementById('stream-chunk-btn').addEventListener('click',async()=>{
-  if(!_activeConvId)return;
-  const chunk=document.getElementById('composer-textarea').value;if(!chunk)return;
-  const btn=document.getElementById('stream-chunk-btn');
-  btn.disabled=true;btn.textContent='Sending...';
-  try{
-    await fetch(`${API}/conversations/${_activeConvId}/chunk`,{method:'POST',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify({chunk})});
+// ── Stream start — sends the textarea content as the first chunk ─────────
+document.getElementById('stream-start-btn').addEventListener('click', async () => {
+  if (!_activeConvId) return;
+  const text = document.getElementById('composer-textarea').value.trim();
+  if (!text) { showOpToast('Type something first before starting the stream.', 'info'); return; }
+
+  const btn = document.getElementById('stream-start-btn');
+  btn.disabled = true; btn.textContent = 'Starting...';
+
+  try {
+    await fetch(`${API}/conversations/${_activeConvId}/chunk`, {
+      method: 'POST', credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ chunk: text }),
+    });
+    document.getElementById('composer-textarea').value = '';
     document.getElementById('stream-indicator').classList.add('active');
-    document.getElementById('composer-textarea').value='';
-    if(document.getElementById('composer-preview').classList.contains('visible')) updatePreview();
-  }catch(e){alert('Error: '+e.message);}
-  finally{btn.disabled=false;btn.textContent='Send chunk';}
+    // Swap to End stream button
+    document.getElementById('stream-start-btn').style.display = 'none';
+    document.getElementById('stream-end-btn').style.display = 'inline-flex';
+    showOpToast('Streaming started — keep typing and click End stream when done.', 'success');
+  } catch(e) { showOpToast('Error: ' + e.message, 'error'); }
+  finally { btn.disabled = false; btn.textContent = 'Start streaming'; }
 });
 
-// Status message button
-document.getElementById('set-status-btn').addEventListener('click',async()=>{
-  if(!_activeConvId)return;
-  const status=document.getElementById('status-msg-input').value.trim();
-  if(!status)return;
-  const btn=document.getElementById('set-status-btn');
-  btn.disabled=true;
-  try{
-    // Send status as a chunk so user sees it as streaming text
-    await fetch(`${API}/conversations/${_activeConvId}/chunk`,{method:'POST',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify({chunk:status})});
-    document.getElementById('stream-indicator').classList.add('active');
-    document.getElementById('status-msg-input').value='';
-    showOpToast('Status sent','success');
-  }catch(e){alert('Error: '+e.message);}
-  finally{btn.disabled=false;}
-});
+// ── Stream end — finalizes the message ───────────────────────────────────
+document.getElementById('stream-end-btn').addEventListener('click', async () => {
+  if (!_activeConvId) return;
+  const remaining = document.getElementById('composer-textarea').value.trim();
+  const btn = document.getElementById('stream-end-btn');
+  btn.disabled = true; btn.textContent = 'Ending...';
 
-document.getElementById('stream-finish-btn').addEventListener('click',async()=>{
-  if(!_activeConvId)return;
-  const content=document.getElementById('composer-textarea').value;
-  await fetch(`${API}/conversations/${_activeConvId}/finish`,{method:'POST',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify({content,citations:_citations})});
-  document.getElementById('stream-indicator').classList.remove('active');
-  document.getElementById('composer-textarea').value='';_citations=[];renderCitationRows();
-  await loadConvMessages(_activeConvId);
+  try {
+    await fetch(`${API}/conversations/${_activeConvId}/finish`, {
+      method: 'POST', credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ content: remaining, citations: _citations }),
+    });
+    document.getElementById('stream-indicator').classList.remove('active');
+    document.getElementById('composer-textarea').value = '';
+    _citations = []; renderCitationRows();
+    // Swap back to Start button
+    document.getElementById('stream-end-btn').style.display = 'none';
+    document.getElementById('stream-start-btn').style.display = 'inline-flex';
+    showOpToast('Stream ended — message delivered.', 'success');
+    await loadConvMessages(_activeConvId);
+  } catch(e) { showOpToast('Error: ' + e.message, 'error'); }
+  finally { btn.disabled = false; btn.textContent = 'End stream'; }
 });
 
 document.querySelectorAll('.toolbar-btn[data-md]').forEach(btn=>{
