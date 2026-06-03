@@ -18,6 +18,19 @@
   <style>
     .app-shell { opacity: 0; transition: opacity 0.2s ease; }
     .app-shell.ready { opacity: 1; }
+    [title]{position:relative}
+    [title]:hover::after{
+      content:attr(title);
+      position:absolute;bottom:calc(100% + 6px);left:50%;transform:translateX(-50%);
+      background:#1a1a22;color:#f0f0f4;font-size:11px;
+      padding:4px 8px;border-radius:5px;border:1px solid #2e2e38;
+      box-shadow:0 2px 8px rgba(0,0,0,0.5);pointer-events:none;z-index:9999;
+      white-space:nowrap;max-width:200px;white-space:normal;text-align:center;line-height:1.4;
+    }
+    [title]:hover::before{
+      content:'';position:absolute;bottom:calc(100% + 1px);left:50%;transform:translateX(-50%);
+      border:5px solid transparent;border-top-color:#1a1a22;pointer-events:none;z-index:9999;
+    }
   </style>
 </head>
 <body>
@@ -33,7 +46,7 @@
         </div>
         SIA
       </a>
-      <button class="new-chat-btn" id="new-chat-btn" title="New chat">
+      <button class="new-chat-btn" id="new-chat-btn" title="Start a new conversation">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
       </button>
     </div>
@@ -54,7 +67,7 @@
 
   <main class="main">
     <header class="chat-header">
-      <button class="sidebar-toggle" id="sidebar-toggle">
+      <button class="sidebar-toggle" id="sidebar-toggle" title="Toggle sidebar">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
       </button>
       <span class="chat-header-title" id="chat-title"></span>
@@ -84,7 +97,7 @@
           <div class="input-image-preview" id="image-preview">
             <img class="input-image-thumb" id="image-thumb" src="" alt="Preview" />
             <span id="image-name" style="flex:1;font-size:var(--text-xs);color:var(--text-muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></span>
-            <button class="input-image-remove" id="image-remove">
+            <button class="input-image-remove" id="image-remove" title="Remove attached image">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
             </button>
           </div>
@@ -92,13 +105,13 @@
           <div class="input-row">
             <textarea id="message-input" placeholder="Message SIA..." rows="1" autocomplete="off" spellcheck="true"></textarea>
             <div class="input-actions">
-              <button class="input-icon-btn" id="image-btn" title="Attach image">
+              <button class="input-icon-btn" id="image-btn" title="Attach an image (JPEG, PNG, WebP, GIF — max 10MB)">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
               </button>
-              <button id="cancel-btn" style="display:none;width:32px;height:32px;border-radius:var(--radius-md);background:var(--surface-2);border:1px solid var(--border);color:var(--text-secondary);align-items:center;justify-content:center;cursor:pointer" title="Cancel">
+              <button id="cancel-btn" title="Cancel pending response" style="display:none;width:32px;height:32px;border-radius:var(--radius-md);background:var(--surface-2);border:1px solid var(--border);color:var(--text-secondary);align-items:center;justify-content:center;cursor:pointer" title="Cancel">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="3" width="18" height="18" rx="2"/></svg>
               </button>
-              <button id="send-btn">
+              <button id="send-btn" title="Send message">
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg>
               </button>
             </div>
