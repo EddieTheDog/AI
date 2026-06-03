@@ -10,8 +10,8 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css" />
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js" defer></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/9.1.6/marked.min.js" defer></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/9.1.6/marked.min.js"></script>
   <link rel="stylesheet" href="/css/base.css" />
   <link rel="stylesheet" href="/css/components.css" />
   <style>
@@ -75,7 +75,7 @@
     .composer-tab.active{background:var(--accent);color:white}
     .composer-textarea{width:100%;min-height:120px;max-height:300px;background:var(--surface-2);border:1px solid var(--border);border-radius:var(--radius-md);padding:var(--space-3);font-size:var(--text-sm);color:var(--text);font-family:var(--font-mono);resize:vertical;line-height:1.6}
     .composer-textarea:focus{border-color:var(--accent)}
-    .composer-preview{display:none;min-height:120px;max-height:300px;overflow-y:auto;background:var(--surface-2);border:1px solid var(--border);border-radius:var(--radius-md);padding:var(--space-3);font-size:var(--text-sm);color:var(--text);line-height:var(--leading-relaxed)}
+    .composer-preview{display:none;min-height:120px;max-height:300px;overflow-y:auto;overflow-x:hidden;background:var(--surface-2);border:1px solid var(--border);border-radius:var(--radius-md);padding:var(--space-3);font-size:var(--text-sm);color:var(--text);line-height:1.7}.composer-preview p{margin:0 0 10px 0}.composer-preview p:last-child{margin:0}.composer-preview h1,.composer-preview h2,.composer-preview h3,.composer-preview h4{font-weight:600;margin:16px 0 6px 0;color:var(--text)}.composer-preview h1{font-size:1.2em}.composer-preview h2{font-size:1.1em}.composer-preview h3{font-size:1em}.composer-preview ul,.composer-preview ol{padding-left:20px;margin:0 0 10px 0;display:flex;flex-direction:column;gap:3px}.composer-preview li{line-height:1.6}.composer-preview strong{font-weight:600;color:var(--text)}.composer-preview em{font-style:italic}.composer-preview blockquote{border-left:3px solid var(--accent);background:rgba(108,99,255,0.08);padding:8px 14px;border-radius:0 6px 6px 0;margin:10px 0;color:var(--text-secondary);font-style:italic}.composer-preview blockquote p{margin:0}.composer-preview hr{border:none;border-top:1px solid var(--border);margin:12px 0}.composer-preview a{color:var(--accent);text-decoration:underline}.composer-preview code{font-family:var(--font-mono);font-size:0.85em;background:var(--surface-3);border:1px solid var(--border);border-radius:4px;padding:1px 5px;color:var(--accent)}.composer-preview pre{background:#0a0a0d;border:1px solid var(--border);border-radius:8px;padding:12px;overflow-x:auto;margin:10px 0}.composer-preview pre code{background:none;border:none;padding:0;color:#e2e8f0;font-size:0.83em;line-height:1.6}.composer-preview table{width:100%;border-collapse:collapse;font-size:0.9em;margin:10px 0}.composer-preview thead th{background:var(--surface-3);padding:7px 14px;text-align:left;font-weight:600;color:var(--text-secondary);border-bottom:1px solid var(--border);font-size:0.78em;text-transform:uppercase;letter-spacing:0.04em}.composer-preview tbody td{padding:7px 14px;border-bottom:1px solid var(--border-soft);color:var(--text)}.composer-preview tbody tr:last-child td{border-bottom:none}.composer-preview tbody tr:hover td{background:var(--surface)}
     .composer-preview.visible{display:block}
     .composer-footer{display:flex;align-items:center;gap:var(--space-2);justify-content:space-between}
     .stream-indicator{display:none;align-items:center;gap:var(--space-2);font-size:var(--text-xs);color:var(--warning)}
@@ -191,6 +191,7 @@
                 <button class="toolbar-btn" data-md="```\n" title="Code block">{ }</button>
                 <button class="toolbar-btn" data-md="> " title="Quote">"</button>
                 <button class="toolbar-btn" data-md="- " title="List">•</button>
+                <button class="toolbar-btn" data-md-table title="Table">⊞</button>
               </div>
               <textarea class="composer-textarea" id="composer-textarea" placeholder="Type a response... Markdown supported"></textarea>
               <div class="composer-preview" id="composer-preview"></div>
@@ -388,7 +389,7 @@ async function loadConvMessages(id){
   const msgs=d.messages??[];
   scroll.innerHTML=msgs.map(m=>{
     const cls=m.status==='pending'?'op-msg-pending':m.role==='user'?'op-msg-user':'op-msg-assistant';
-    const content=m.role==='assistant'&&window.marked?window.marked.parse(m.content||'(pending…)'):_e(m.content||'(pending…)');
+    setupMarked();const content=m.role==='assistant'&&window.marked?window.marked.parse(m.content||'(pending…)'):_e(m.content||'(pending…)');
     const reacts=(m.reactions||[]).map(r=>`<span class="badge badge-${r.type==='up'?'success':'error'}">${r.type==='up'?'+1':'-1'} ${_e(r.email)}</span>`).join(' ');
     return`<div class="op-msg ${cls}">${content}<div class="op-msg-meta"><span>${m.role==='user'?'User':'Assistant'}</span><span>${_rt(m.created_at)}</span>${m.status==='pending'?'<span class="badge badge-warning">Awaiting reply</span>':''}${reacts}${m.role==='assistant'&&m.status==='done'?`<button class="btn btn-ghost btn-sm" style="font-size:10px;padding:1px 6px" onclick="editMsg('${m.id}')">Edit</button>`:''}</div></div>`;
   }).join('');
@@ -412,25 +413,62 @@ document.getElementById('send-reply-btn').addEventListener('click',async()=>{
   finally{btn.disabled=false;btn.textContent='Send reply';}
 });
 
+// ── Marked renderer setup ─────────────────────────────────────────────
+function setupMarked() {
+  if (!window.marked || window._markedReady) return;
+  const renderer = new marked.Renderer();
+  renderer.code = (code, lang) => {
+    const l = (lang || 'text').toLowerCase();
+    let hi = (code || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    if (window.hljs) {
+      try { hi = window.hljs.getLanguage(l) ? window.hljs.highlight(code,{language:l,ignoreIllegals:true}).value : window.hljs.highlightAuto(code).value; } catch(e) {}
+    }
+    return `<pre><code class="hljs language-${l}">${hi}</code></pre>`;
+  };
+  renderer.codespan = code => `<code>${(code||'').replace(/</g,'&lt;')}</code>`;
+  renderer.blockquote = q => `<blockquote>${q}</blockquote>`;
+  renderer.table = (header, body) => `<table><thead>${header}</thead><tbody>${body}</tbody></table>`;
+  renderer.link = (href, title, text) => `<a href="${href}" target="_blank" rel="noopener noreferrer">${text}</a>`;
+  renderer.heading = (text, level) => `<h${level}>${text}</h${level}>`;
+  renderer.list = (body, ordered) => ordered ? `<ol>${body}</ol>` : `<ul>${body}</ul>`;
+  renderer.listitem = text => `<li>${text}</li>`;
+  renderer.paragraph = text => `<p>${text}</p>`;
+  renderer.strong = text => `<strong>${text}</strong>`;
+  renderer.em = text => `<em>${text}</em>`;
+  renderer.hr = () => `<hr />`;
+  marked.use({ renderer, gfm: true, breaks: true });
+  window._markedReady = true;
+}
+
+function renderPreview(md) {
+  setupMarked();
+  if (!md.trim()) return '<p style="color:var(--text-muted);font-style:italic">Nothing to preview yet...</p>';
+  if (window.marked) { try { return window.marked.parse(md); } catch(e) {} }
+  return md.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/\n/g,'<br>');
+}
+
+function updatePreview() {
+  const md = document.getElementById('composer-textarea').value;
+  document.getElementById('composer-preview').innerHTML = renderPreview(md);
+}
+
 document.querySelectorAll('.composer-tab').forEach(tab=>{
   tab.addEventListener('click',()=>{
     document.querySelectorAll('.composer-tab').forEach(t=>t.classList.remove('active'));
     tab.classList.add('active');
     const t=tab.dataset.tab;_streamMode=t==='stream';
     document.getElementById('composer-textarea').style.display=t==='preview'?'none':'block';
-    document.getElementById('composer-preview').classList.toggle('visible',t==='preview');
+    const previewEl = document.getElementById('composer-preview');
+    previewEl.classList.toggle('visible',t==='preview');
     document.getElementById('stream-chunk-btn').style.display=_streamMode?'inline-flex':'none';
     document.getElementById('stream-finish-btn').style.display=_streamMode?'inline-flex':'none';
     document.getElementById('send-reply-btn').style.display=_streamMode?'none':'inline-flex';
-    if(t==='preview'){const md=document.getElementById('composer-textarea').value;document.getElementById('composer-preview').innerHTML=window.marked?window.marked.parse(md):md;}
+    if(t==='preview') updatePreview();
   });
 });
 
 document.getElementById('composer-textarea').addEventListener('input',()=>{
-  if(document.getElementById('composer-preview').classList.contains('visible')){
-    const md=document.getElementById('composer-textarea').value;
-    document.getElementById('composer-preview').innerHTML=window.marked?window.marked.parse(md):md;
-  }
+  if(document.getElementById('composer-preview').classList.contains('visible')) updatePreview();
 });
 
 document.getElementById('stream-chunk-btn').addEventListener('click',async()=>{
@@ -457,8 +495,23 @@ document.querySelectorAll('.toolbar-btn[data-md]').forEach(btn=>{
     const ins=sel?`${md}${sel}${md}`:md;const s=ta.selectionStart;
     ta.value=ta.value.substring(0,s)+ins+ta.value.substring(ta.selectionEnd);
     ta.selectionStart=ta.selectionEnd=s+ins.length;ta.focus();
+    if(document.getElementById('composer-preview').classList.contains('visible')) updatePreview();
   });
 });
+
+// Table insert button
+const tableBtn = document.querySelector('.toolbar-btn[data-md-table]');
+if (tableBtn) {
+  tableBtn.addEventListener('click', () => {
+    const ta = document.getElementById('composer-textarea');
+    const table = '\n| Header 1 | Header 2 | Header 3 |\n| --- | --- | --- |\n| Cell 1 | Cell 2 | Cell 3 |\n| Cell 4 | Cell 5 | Cell 6 |\n';
+    const s = ta.selectionStart;
+    ta.value = ta.value.substring(0, s) + table + ta.value.substring(ta.selectionEnd);
+    ta.selectionStart = ta.selectionEnd = s + table.length;
+    ta.focus();
+    if(document.getElementById('composer-preview').classList.contains('visible')) updatePreview();
+  });
+}
 
 document.getElementById('toggle-citations').addEventListener('click',()=>{
   const e=document.getElementById('citations-editor');
