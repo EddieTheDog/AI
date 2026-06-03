@@ -93,8 +93,36 @@
     .op-login-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-xl);padding:var(--space-8);width:100%;max-width:380px;box-shadow:var(--shadow-xl)}
     .op-error{display:none;background:rgba(248,113,113,.1);border:1px solid rgba(248,113,113,.25);border-radius:var(--radius-md);padding:var(--space-3);font-size:var(--text-sm);color:var(--error);margin-bottom:var(--space-4)}
     .op-error.visible{display:block}
+    @keyframes cursorBlink{0%,100%{opacity:1}50%{opacity:0}}
+    .op-msg-content p{margin:0 0 8px 0}
+    .op-msg-content p:last-child{margin:0}
+    .op-msg-content ul,.op-msg-content ol{padding-left:18px;margin:0 0 8px 0}
+    .op-msg-content pre{background:#0a0a0d;border:1px solid var(--border);border-radius:6px;padding:10px;overflow-x:auto;margin:8px 0}
+    .op-msg-content code{font-family:var(--font-mono);font-size:0.85em;background:var(--surface-3);padding:1px 5px;border-radius:3px}
+    .op-msg-content pre code{background:none;padding:0;color:#e2e8f0}
+    .op-msg-content table{width:100%;border-collapse:collapse;font-size:0.85em;margin:8px 0}
+    .op-msg-content th{background:var(--surface-3);padding:5px 12px;text-align:left;font-size:0.75em;text-transform:uppercase;letter-spacing:.04em;color:var(--text-muted);border-bottom:1px solid var(--border)}
+    .op-msg-content td{padding:5px 12px;border-bottom:1px solid var(--border-soft);color:var(--text)}
+    .op-msg-content blockquote{border-left:3px solid var(--accent);background:rgba(108,99,255,0.08);padding:6px 12px;margin:8px 0;border-radius:0 4px 4px 0;color:var(--text-secondary);font-style:italic}
+    .op-msg-content h1,.op-msg-content h2,.op-msg-content h3{font-weight:600;margin:12px 0 4px 0;color:var(--text)}
+    .op-msg-content strong{font-weight:600}
     .citation-row{display:flex;gap:var(--space-2);margin-bottom:var(--space-2)}
     @media(max-width:900px){.stats-grid{grid-template-columns:repeat(2,1fr)}.reply-shell{flex-direction:column}.conv-list-panel{width:100%;max-height:200px}.notes-sidebar{display:none}}
+
+    /* ── Tooltips ─────────────────────────────────────────────────────── */
+    [title]{position:relative}
+    [title]:hover::after{
+      content:attr(title);
+      position:absolute;bottom:calc(100% + 6px);left:50%;transform:translateX(-50%);
+      background:#1a1a22;color:var(--text);font-size:11px;white-space:nowrap;
+      padding:4px 8px;border-radius:5px;border:1px solid var(--border);
+      box-shadow:0 2px 8px rgba(0,0,0,0.5);pointer-events:none;z-index:9999;
+      max-width:220px;white-space:normal;text-align:center;line-height:1.4;
+    }
+    [title]:hover::before{
+      content:'';position:absolute;bottom:calc(100% + 1px);left:50%;transform:translateX(-50%);
+      border:5px solid transparent;border-top-color:#1a1a22;pointer-events:none;z-index:9999;
+    }
   </style>
 </head>
 <body>
@@ -136,7 +164,7 @@
     <a class="nav-item" data-panel="expiry" href="#"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>Expiring Chats</a>
     <a class="nav-item" data-panel="settings" href="#"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>Settings</a>
     <div class="op-nav-footer">
-      <div class="nav-item" id="op-logout-btn"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>Sign out</div>
+      <div class="nav-item" id="op-logout-btn"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg title="Sign out of operator panel">Sign out</div>
       <div style="padding:var(--space-2) var(--space-3);font-size:var(--text-xs);color:var(--text-muted)" id="op-admin-name"></div>
     </div>
   </nav>
@@ -145,7 +173,7 @@
     <div class="op-topbar">
       <span class="op-topbar-title" id="op-panel-title">Dashboard</span>
       <span style="font-size:var(--text-xs);color:var(--text-muted)">Auto-refreshing every 15s</span>
-      <button class="btn btn-secondary btn-sm" id="op-refresh-btn">Refresh</button>
+      <button class="btn btn-secondary btn-sm" id="op-refresh-btn" title="Manually refresh dashboard data">Refresh</button>
     </div>
     <div class="op-content" id="op-content">
 
@@ -173,8 +201,8 @@
           <div class="msg-view-panel">
             <div class="msg-view-header">
               <span class="msg-view-title" id="msg-view-title">Select a conversation</span>
-              <button class="btn btn-secondary btn-sm" id="assign-btn">Claim</button>
-              <button class="btn btn-secondary btn-sm" id="unassign-btn" style="display:none">Release</button>
+              <button class="btn btn-secondary btn-sm" id="assign-btn" title="Assign this conversation to yourself">Claim</button>
+              <button class="btn btn-secondary btn-sm" id="unassign-btn" style="display:none" title="Unassign yourself from this conversation">Release</button>
             </div>
             <div class="msg-view-scroll" id="msg-view-scroll"></div>
             <div class="reply-composer" id="reply-composer">
@@ -205,9 +233,17 @@
               <div class="composer-footer">
                 <div class="stream-indicator" id="stream-indicator"><span class="presence-dot active"></span>Streaming...</div>
                 <div style="display:flex;gap:var(--space-2)">
-                  <button class="btn btn-secondary btn-sm" id="stream-chunk-btn" style="display:none">Send chunk</button>
-                  <button class="btn btn-danger btn-sm" id="stream-finish-btn" style="display:none">Finish stream</button>
-                  <button class="btn btn-primary" id="send-reply-btn" disabled>Send reply</button>
+                  <div id="stream-controls" style="display:none;flex-direction:column;gap:6px;width:100%">
+                    <div style="display:flex;gap:6px;align-items:center">
+                      <input id="status-msg-input" class="form-input" placeholder="Status label (e.g. Researching... Thinking...)" style="font-size:var(--text-xs);padding:4px 10px;flex:1;" title="Set a visible status/thinking message the user sees while you type" />
+                      <button class="btn btn-secondary btn-sm" id="set-status-btn" title="Send this as the current thinking status">Set status</button>
+                    </div>
+                    <div style="display:flex;gap:6px;">
+                      <button class="btn btn-secondary btn-sm" id="stream-chunk-btn" title="Send this chunk of text to the user — they'll see it appear in real time">Send chunk</button>
+                      <button class="btn btn-danger btn-sm" id="stream-finish-btn" title="Finalize and close the stream — marks message as done">Finish &amp; send</button>
+                    </div>
+                  </div>
+                  <button class="btn btn-primary" id="send-reply-btn" disabled title="Send complete reply instantly">Send reply</button>
                 </div>
               </div>
             </div>
@@ -219,7 +255,7 @@
               <textarea id="note-textarea" placeholder="Add a note..."></textarea>
               <div style="display:flex;gap:var(--space-2)">
                 <input class="form-input" id="note-tag" placeholder="Tag" style="font-size:var(--text-xs);padding:var(--space-1) var(--space-2)" />
-                <button class="btn btn-secondary btn-sm" id="save-note-btn">Save</button>
+                <button class="btn btn-secondary btn-sm" id="save-note-btn" title="Save this internal note (never visible to users)">Save</button>
               </div>
             </div>
           </div>
@@ -260,7 +296,7 @@
             <div class="form-group"><label class="form-label">Warning before expiry (days)</label><input class="form-input" id="set-warn-days" type="number" min="1" max="30" /></div>
             <div class="form-group"><label class="form-label">Max message length (chars)</label><input class="form-input" id="set-max-msg" type="number" /></div>
             <div class="form-group" style="flex-direction:row;align-items:center;gap:var(--space-3)"><label class="toggle"><input type="checkbox" id="set-reg-enabled" /><span class="toggle-track"></span></label><span class="form-label" style="margin:0">Allow new user registrations</span></div>
-            <button class="btn btn-primary" id="save-settings-btn">Save settings</button>
+            <button class="btn btn-primary" id="save-settings-btn" title="Save platform settings">Save settings</button>
           </div>
         </div>
       </div>
@@ -272,6 +308,7 @@
 <script type="module">
 const API='/api/admin';
 let _admin=null,_activeConvId=null,_streamMode=false,_citations=[];
+let _msgPollTimer=null,_dashPollTimer=null,_queuePollTimer=null;
 
 async function boot(){
   const r=await fetch(`${API}/me`,{credentials:'include'});
@@ -285,7 +322,7 @@ function showDashboard(){
   document.getElementById('op-shell').style.display='flex';
   document.getElementById('op-admin-name').textContent=_admin.display_name||_admin.email;
   loadDashboard();
-  setInterval(loadDashboard,15000);
+  _dashPollTimer = setInterval(loadDashboard, 4000);
 }
 
 document.getElementById('op-login-btn').addEventListener('click',async()=>{
@@ -366,11 +403,88 @@ async function loadConversations(){
     </div>`).join('');
 }
 
+// ── Message polling — auto-refresh active conversation ──────────────────
+function startMsgPoll(id) {
+  stopMsgPoll();
+  _msgPollTimer = setInterval(async () => {
+    if (!_activeConvId || _activeConvId !== id) { stopMsgPoll(); return; }
+    try {
+      const r = await fetch(`${API}/conversations/${id}/messages`, { credentials: 'include' });
+      const d = await r.json();
+      const msgs = d.messages ?? [];
+      const scroll = document.getElementById('msg-view-scroll');
+      const wasAtBottom = scroll.scrollHeight - scroll.scrollTop - scroll.clientHeight < 80;
+
+      // Check if anything changed
+      const pendingMsg = msgs.find(m => m.status === 'pending');
+      const latestId = msgs.length ? msgs[msgs.length-1].id : null;
+      const currentIds = [...scroll.querySelectorAll('.op-msg')].map(el => el.dataset.msgId);
+      const serverIds = msgs.map(m => m.id);
+      const changed = JSON.stringify(currentIds) !== JSON.stringify(serverIds);
+
+      if (changed) {
+        renderMsgView(msgs, id);
+        if (wasAtBottom) scroll.scrollTop = scroll.scrollHeight;
+      } else {
+        // Update pending message content in place (streaming)
+        if (pendingMsg) {
+          const el = scroll.querySelector(`[data-msg-id="${pendingMsg.id}"]`);
+          if (el) {
+            const contentEl = el.querySelector('.op-msg-content');
+            if (contentEl) {
+              // Check typing_state via messages endpoint which includes partial
+              const partial = pendingMsg.content || '';
+              if (contentEl.dataset.lastContent !== partial) {
+                contentEl.dataset.lastContent = partial;
+                setupMarked();
+                contentEl.innerHTML = (partial ? (window.marked ? window.marked.parse(partial) : _e(partial)) : '<em style="color:var(--text-muted)">Waiting for response...</em>') + '<span class="cursor-blink" style="display:inline-block;width:2px;height:1em;background:var(--accent);border-radius:1px;margin-left:2px;vertical-align:text-bottom;animation:cursorBlink 0.8s step-end infinite"></span>';
+              }
+            }
+          }
+          if (wasAtBottom) scroll.scrollTop = scroll.scrollHeight;
+        }
+      }
+    } catch(e) {}
+  }, 1500);
+}
+
+function stopMsgPoll() {
+  if (_msgPollTimer) { clearInterval(_msgPollTimer); _msgPollTimer = null; }
+}
+
+function renderMsgView(msgs, id) {
+  const scroll = document.getElementById('msg-view-scroll');
+  scroll.innerHTML = msgs.map(m => {
+    const isPending = m.status === 'pending';
+    const cls = isPending ? 'op-msg-pending' : m.role === 'user' ? 'op-msg-user' : 'op-msg-assistant';
+    setupMarked();
+    let body = '';
+    if (m.role === 'assistant') {
+      body = m.content && window.marked ? window.marked.parse(m.content || '') : _e(m.content || '');
+      if (isPending) body = (body || '<em style="color:var(--text-muted)">Waiting...</em>') + '<span class="cursor-blink" style="display:inline-block;width:2px;height:1em;background:var(--accent);border-radius:1px;margin-left:2px;vertical-align:text-bottom;animation:cursorBlink 0.8s step-end infinite"></span>';
+    } else {
+      body = _e(m.content || '');
+    }
+    const reacts = (m.reactions||[]).map(r=>`<span class="badge badge-${r.type==='up'?'success':'error'}">${r.type==='up'?'+1':'-1'} ${_e(r.email)}</span>`).join(' ');
+    return `<div class="op-msg ${cls}" data-msg-id="${m.id}">
+      <div class="op-msg-content">${body}</div>
+      <div class="op-msg-meta">
+        <span>${m.role==='user'?'User':'Assistant'}</span>
+        <span>${_rt(m.created_at)}</span>
+        ${isPending?'<span class="badge badge-warning">Pending</span>':''}
+        ${reacts}
+        ${m.role==='assistant'&&m.status==='done'?`<button class="btn btn-ghost btn-sm" style="font-size:10px;padding:1px 6px" title="Edit this message" onclick="editMsg('${m.id}')">Edit</button>`:''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
 window.selectConv=async function(id){
   _activeConvId=id;_citations=[];
   document.querySelectorAll('.conv-list-item').forEach(el=>el.classList.toggle('active',el.dataset.id===id));
   await loadConvMessages(id);await loadNotes(id);
   document.getElementById('send-reply-btn').disabled=false;
+  startMsgPoll(id);
 };
 
 window.openConvReply=async function(id){
@@ -385,14 +499,9 @@ window.openConvReply=async function(id){
 async function loadConvMessages(id){
   const r=await fetch(`${API}/conversations/${id}/messages`,{credentials:'include'});
   const d=await r.json();
-  const scroll=document.getElementById('msg-view-scroll');
   const msgs=d.messages??[];
-  scroll.innerHTML=msgs.map(m=>{
-    const cls=m.status==='pending'?'op-msg-pending':m.role==='user'?'op-msg-user':'op-msg-assistant';
-    setupMarked();const content=m.role==='assistant'&&window.marked?window.marked.parse(m.content||'(pending…)'):_e(m.content||'(pending…)');
-    const reacts=(m.reactions||[]).map(r=>`<span class="badge badge-${r.type==='up'?'success':'error'}">${r.type==='up'?'+1':'-1'} ${_e(r.email)}</span>`).join(' ');
-    return`<div class="op-msg ${cls}">${content}<div class="op-msg-meta"><span>${m.role==='user'?'User':'Assistant'}</span><span>${_rt(m.created_at)}</span>${m.status==='pending'?'<span class="badge badge-warning">Awaiting reply</span>':''}${reacts}${m.role==='assistant'&&m.status==='done'?`<button class="btn btn-ghost btn-sm" style="font-size:10px;padding:1px 6px" onclick="editMsg('${m.id}')">Edit</button>`:''}</div></div>`;
-  }).join('');
+  renderMsgView(msgs,id);
+  const scroll=document.getElementById('msg-view-scroll');
   scroll.scrollTop=scroll.scrollHeight;
   document.getElementById('msg-view-title').textContent=id;
 }
@@ -460,8 +569,7 @@ document.querySelectorAll('.composer-tab').forEach(tab=>{
     document.getElementById('composer-textarea').style.display=t==='preview'?'none':'block';
     const previewEl = document.getElementById('composer-preview');
     previewEl.classList.toggle('visible',t==='preview');
-    document.getElementById('stream-chunk-btn').style.display=_streamMode?'inline-flex':'none';
-    document.getElementById('stream-finish-btn').style.display=_streamMode?'inline-flex':'none';
+    document.getElementById('stream-controls').style.display=_streamMode?'flex':'none';
     document.getElementById('send-reply-btn').style.display=_streamMode?'none':'inline-flex';
     if(t==='preview') updatePreview();
   });
@@ -474,9 +582,32 @@ document.getElementById('composer-textarea').addEventListener('input',()=>{
 document.getElementById('stream-chunk-btn').addEventListener('click',async()=>{
   if(!_activeConvId)return;
   const chunk=document.getElementById('composer-textarea').value;if(!chunk)return;
-  await fetch(`${API}/conversations/${_activeConvId}/chunk`,{method:'POST',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify({chunk})});
-  document.getElementById('stream-indicator').classList.add('active');
-  document.getElementById('composer-textarea').value='';
+  const btn=document.getElementById('stream-chunk-btn');
+  btn.disabled=true;btn.textContent='Sending...';
+  try{
+    await fetch(`${API}/conversations/${_activeConvId}/chunk`,{method:'POST',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify({chunk})});
+    document.getElementById('stream-indicator').classList.add('active');
+    document.getElementById('composer-textarea').value='';
+    if(document.getElementById('composer-preview').classList.contains('visible')) updatePreview();
+  }catch(e){alert('Error: '+e.message);}
+  finally{btn.disabled=false;btn.textContent='Send chunk';}
+});
+
+// Status message button
+document.getElementById('set-status-btn').addEventListener('click',async()=>{
+  if(!_activeConvId)return;
+  const status=document.getElementById('status-msg-input').value.trim();
+  if(!status)return;
+  const btn=document.getElementById('set-status-btn');
+  btn.disabled=true;
+  try{
+    // Send status as a chunk so user sees it as streaming text
+    await fetch(`${API}/conversations/${_activeConvId}/chunk`,{method:'POST',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify({chunk:status})});
+    document.getElementById('stream-indicator').classList.add('active');
+    document.getElementById('status-msg-input').value='';
+    showOpToast('Status sent','success');
+  }catch(e){alert('Error: '+e.message);}
+  finally{btn.disabled=false;}
 });
 
 document.getElementById('stream-finish-btn').addEventListener('click',async()=>{
@@ -583,7 +714,7 @@ async function loadAnalytics(){
 
 async function loadExpiry(){
   const r=await fetch(`${API}/expiring`,{credentials:'include'});const d=await r.json();
-  document.getElementById('expiry-tbody').innerHTML=(d.expiring??[]).map(c=>`<tr><td>${_e(c.email)}</td><td>${_e(c.title)}</td><td>${_rt(c.expires_at)}</td><td><button class="btn btn-secondary btn-sm" onclick="preserveChat('${c.id}')">Preserve</button></td></tr>`).join('');
+  document.getElementById('expiry-tbody').innerHTML=(d.expiring??[]).map(c=>`<tr><td>${_e(c.email)}</td><td>${_e(c.title)}</td><td>${_rt(c.expires_at)}</td><td><button class="btn btn-secondary btn-sm" onclick="preserveChat('${c.id}')" title="Prevent this conversation from being auto-deleted">Preserve</button></td></tr>`).join('');
   document.getElementById('expired-tbody').innerHTML=(d.recently_expired??[]).map(c=>`<tr><td>${_e(c.email)}</td><td>${_e(c.title)}</td><td>${_rt(c.expires_at)}</td></tr>`).join('');
 }
 
@@ -606,6 +737,17 @@ document.getElementById('save-settings-btn').addEventListener('click',async()=>{
 });
 
 function showErr(m){const e=document.getElementById('op-error');e.textContent=m;e.classList.add('visible');}
+
+function showOpToast(msg,type='info'){
+  let c=document.getElementById('op-toast-container');
+  if(!c){c=document.createElement('div');c.id='op-toast-container';c.style.cssText='position:fixed;bottom:24px;right:24px;z-index:9999;display:flex;flex-direction:column;gap:8px;pointer-events:none';document.body.appendChild(c);}
+  const t=document.createElement('div');
+  const colors={'success':'var(--success)','error':'var(--error)','info':'var(--info)'};
+  t.style.cssText=`background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:10px 16px;font-size:13px;color:var(--text);box-shadow:0 4px 16px rgba(0,0,0,0.5);pointer-events:all;border-left:3px solid ${colors[type]||colors.info};opacity:0;transform:translateY(6px);transition:all 0.2s`;
+  t.textContent=msg;c.appendChild(t);
+  requestAnimationFrame(()=>{t.style.opacity='1';t.style.transform='translateY(0)';});
+  setTimeout(()=>{t.style.opacity='0';setTimeout(()=>t.remove(),300);},3000);
+}
 function clearErr(){document.getElementById('op-error').classList.remove('visible');}
 function _e(s){if(!s)return'';return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 function _rt(s){if(!s)return'—';const d=Math.floor((Date.now()-new Date(s).getTime())/1000);if(d<60)return'just now';if(d<3600)return`${Math.floor(d/60)}m ago`;if(d<86400)return`${Math.floor(d/3600)}h ago`;return`${Math.floor(d/86400)}d ago`;}
